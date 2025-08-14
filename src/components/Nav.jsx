@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 function Nav() {
   return (
     <>
-      <nav className="bg-gray-500 p-4">
-        <div className="flex item-center justify-between">
-          <div className="text-white text-2xl font-bold">
+      <nav className="bg-[#223F43] h-[48px] py-[10px] px-[76px]">
+        <div className="flex item-center justify-between ">
+          <div className="text-white text-base font-bold ">
             <Link to="/">Monly</Link>
           </div>
-          <ul className="flex space-x-4">
+          <ul className="flex gap-16 pr-[78px] text-base">
             <li>
               <Link to="/wallet">My Wallet</Link>
             </li>
@@ -18,7 +18,7 @@ function Nav() {
               </a>
             </li>
             <li>
-              <a href="#" className="text-white">
+              <a href="#" className="text-white  ">
                 Profile
               </a>
             </li>
