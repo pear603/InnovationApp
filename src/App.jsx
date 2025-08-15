@@ -5,7 +5,7 @@ import { Routes, Route } from "react-router-dom";
 
 import Nav from "./components/Nav.jsx";
 import Home from "./pages/Home.jsx";
-import Wallet from "./pages/Wallet.jsx";
+import AddWallet from "./pages/AddWallet.jsx";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -16,7 +16,7 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />}></Route>
-          <Route path="/wallet" element={<Wallet />}></Route>
+          <Route path="/wallet" element={<AddWallet />}></Route>
         </Routes>
       </main>
     </div>
