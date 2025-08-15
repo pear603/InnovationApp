@@ -11,7 +11,7 @@ function Home() {
       <div className="flex justify-center items-center h-screen">
         <div className="inline justify-center items-center text-center">
           <p>Add another wallet</p>
-          <p>take full control of your money!</p>
+          <p>take full control of your money! Yeah</p>
         </div>
       </div>
       {/* <button
