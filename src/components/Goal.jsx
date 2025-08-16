@@ -6,7 +6,7 @@ function Goal() {
         <div className="w-[362px] h-[90px] bg-transparent">
           <p className="p-[10px] text-[16px] text-black">Goal</p>
           <div className="flex items-center h-[40px] 
-                          w-[362px] bg-[#E7EBEE] shadow-[0_4px_6px_rgba(0,0,0,0.2)] rounded-lg">
+                          w-[363px] bg-[#E7EBEE] shadow-[0_4px_6px_rgba(0,0,0,0.2)] rounded-lg">
             <input
               type="text"
               placeholder="Set Goal Amount |"

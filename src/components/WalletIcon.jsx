@@ -13,8 +13,8 @@ function WalletIcon() {
 
   return (
     <>
-      <div className="flex justify-center items-center">
-        <label className="w-[173px] h-[173px] bg-[#C3C0C0] rounded-lg flex justify-center items-center cursor-pointer overflow-hidden">
+      <div>
+        <label className="w-[173px] h-[173px] bg-[#C3C0C0] shadow-[0_4px_6px_rgba(0,0,0,0.2)] rounded-lg flex justify-center items-center cursor-pointer overflow-hidden">
           {image ? (
             <img
               src={image}
