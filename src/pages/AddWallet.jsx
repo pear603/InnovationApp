@@ -1,8 +1,5 @@
 import "../tailwind.css";
 
-import Nav from "../components/Nav";
-import Panel from "../components/Panel";
-import Wallet from "../components/Wallet";
 import WalletName from "../components/WalletName";
 import Goal from "../components/Goal";
 import IncomeButton from "../components/IncomeButton";
@@ -11,16 +8,12 @@ import BothButton from "../components/BothButton";
 import ShowDailyBudget from "../components/ShowDailyBudget";
 import CreateButton from "../components/CreateButton";
 import WalletIcon from "../components/WalletIcon";
-import Balance from "../components/Balance";
-import BalanceLeft from "../components/BalanceLeft";
-import BalanceAll from "../components/BalanceAll";
 
 function AddWallet() {
   return (
-    <div className="w-screen h-screen flex justify-center items-center">
-      <div className="w-[1273px] h-[915px] pt-[60px] ">
-        <p className="text-[32px]  ml-4">Wallets</p>
-
+    <div className="w-screen h-screen flex flex-col">
+      <p className="text-[32px]  ml-12 mt-6">Wallets</p>
+      <div className="w-[1273px] h-[915px] pt-[60px] mx-auto">
         <div className="flex justify-center items-center pt-[60px] ">
           <div className="w-[632px] h-[424px] bg-white rounded-lg border-[1px] border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)]">
             <div className="w-[630px] h-[40px] bg-white rounded-lg border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)] relative">
