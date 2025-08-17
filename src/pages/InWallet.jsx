@@ -1,4 +1,5 @@
 import GoodToKnow from "../components/GoodToKnow";
+import SelectTag from "../components/SelectTag";
 import SuggestionBox from "../components/SuggestionBox";
 import "../tailwind.css";
 function InWallet() {
@@ -6,6 +7,7 @@ function InWallet() {
         <div className="">
             <SuggestionBox/>
             <GoodToKnow/>
+            <SelectTag/>
         </div>
     );
 }
