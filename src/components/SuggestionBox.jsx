@@ -4,7 +4,7 @@ function SuggestionBox(){
     return (
     <>
     <div className="flex flex-col items-start w-322 h-137
-    box-content border-1 p-4 rounded-4xl bg-gray-100">
+    box-content p-4 rounded-4xl bg-gray-100">
        <h1 className="pl-15 pt-15 text-8xl">
         Suggestions
        </h1>
