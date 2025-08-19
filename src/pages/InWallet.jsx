@@ -3,6 +3,7 @@ import SelectTag from "../components/SelectTag";
 import SuggestionBox from "../components/SuggestionBox";
 import Spendings from "../components/Spendings";
 import Notes from "../components/Notes";
+import Insert from "../components/Insert"
 import "../tailwind.css";
 function InWallet() {
     return(
@@ -12,6 +13,7 @@ function InWallet() {
             <SelectTag/>
             <Spendings/>
             <Notes/>
+            <Insert/>
         </div>
     );
 }
