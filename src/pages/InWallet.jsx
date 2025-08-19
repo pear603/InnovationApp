@@ -5,6 +5,7 @@ import Spendings from "../components/Spendings";
 import Notes from "../components/Notes";
 import Insert from "../components/Insert";
 import PieStats from "../components/PieStats";
+import BarGraph from "../components/BarGraph";
 import "../tailwind.css";
 
 function InWallet() {
@@ -17,6 +18,7 @@ function InWallet() {
             <Notes/>
             <Insert/>
             <PieStats/>
+            <BarGraph/>
         </div>
     );
 }
