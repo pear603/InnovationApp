@@ -13,9 +13,7 @@ function Nav() {
               <Link to="/wallet">My Wallet</Link>
             </li>
             <li>
-              <a href="#" className="text-white">
-                Wallet Analytic
-              </a>
+              <Link to="/walletanalytic">Wallet Analytic</Link>
             </li>
             <li>
               <a href="#" className="text-white  ">
