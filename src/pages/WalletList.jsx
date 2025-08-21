@@ -1,12 +1,9 @@
-import Nav from "../components/Nav";
-import CreateWallet from "../components/Panel";
 import "../tailwind.css";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import Nav from "../components/Nav";
+import Home from "./Home";
 import AddBtn from "../components/AddBtn";
 
-function Home() {
-  const navigate = useNavigate();
+function WalletList({ children }) {
   return (
     <>
       <div className="flex justify-center items-center h-screen bg-[#E2EFF3]">
@@ -14,8 +11,9 @@ function Home() {
           <p className="text-[32px]  ml-12 mt-6">Wallets</p>
           <div className="w-screen h-screen flex  justify-center items-center text-center">
             <div className="text-[#969393]">
-              <p>Add another wallet</p>
-              <p>take full control of your money! Yeah</p>
+              {/* <p>Add another wallet</p>
+              <p>take full control of your money! Yeah</p> */}
+              {children}
             </div>
           </div>
         </div>
@@ -25,4 +23,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default WalletList;
