@@ -3,19 +3,17 @@ import { Link } from "react-router-dom";
 function Nav() {
   return (
     <>
-      <nav className="bg-[#223F43] h-[48px] py-[10px] px-[76px]">
+      <nav className="bg-[#59A5B2] h-[48px] py-[10px] px-[76px]">
         <div className="flex item-center justify-between ">
           <div className="text-white text-base font-bold ">
             <Link to="/">Monly</Link>
           </div>
           <ul className="flex gap-16 pr-[78px] text-base">
             <li>
-              <Link to="/wallet">My Wallet</Link>
+              <Link to="/walletlist">My Wallet</Link>
             </li>
             <li>
-              <a href="#" className="text-white">
-                Wallet Analytic
-              </a>
+              <Link to="/walletanalytic">Wallet Analytic</Link>
             </li>
             <li>
               <a href="#" className="text-white  ">
