@@ -1,4 +1,4 @@
-import "../tailwind.css";
+import "../../tailwind.css";
 import { Link } from "react-router-dom";
 function Spendings() {
     return (
