@@ -9,7 +9,7 @@ function WalletName() {
                           w-[363px] bg-[#E7EBEE] shadow-[0_4px_6px_rgba(0,0,0,0.2)] rounded-lg">
             <input
               type="text"
-              placeholder="Name Your Wallet |"
+              placeholder="Name Your Wallet"
               className="ml-[15px] w-full bg-transparent outline-none text-[16px] text-[#707376]"
             />
           </div>
