@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 function PieStats(){
     return (
     <>
-    <div className="flex flex-col items-center justify-center w-323 h-291
-    box-content p-4 rounded-4xl bg-gray-100">
-       <div className="w-209 h-209 bg-gray-300 rounded-full">
+    <div className="flex flex-col items-center justify-center w-full h-full
+    box-content p-4 rounded-[9px] bg-gray-100 border border-black/10">
+       <div className="w-full h-full bg-gray-300 rounded-full">
              
        </div>
     </div>
