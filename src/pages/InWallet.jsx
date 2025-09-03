@@ -9,6 +9,7 @@ import BarGraph from "../components/Ohma/BarGraph";
 import "../tailwind.css";
 import BalanceLeft from "../components/BalanceLeft";
 import ExpenseButton from "../components/ExpenseBtn";
+import Transaction from "../components/Ohma/Transaction";
 
 function InWallet() {
   return (
@@ -30,26 +31,28 @@ function InWallet() {
         {/*Statistics box*/}
         <div className="flex flex-col bg-white w-[741px] h-[691px] border border-black/25 rounded-[10px]">
             <div className="mt-5 ml-10 text-[24px] font-normal">Statistics</div>
-            <div className="grid grid-cols-2 w-full h-[291px] mt-4 gap-2">
-                <dix className="ml-10 mr-8">
+            <div className="grid grid-cols-2 w-full h-[291px] mt-4 gap-5">
+                <dix className="ml-10 mr-8 mb-5">
                     <PieStats/>
                 </dix>
-                <div className="w-[331px] h-[291px] flex flex-col gap-2">
+                <div className="w-[331px] h-[291px] flex flex-col gap-5">
                     <SuggestionBox/>
                     <GoodToKnow/>
                 </div>
             </div>
+            <div className="w-[635px] h-[230px] ml-10 mt-9">
+                <BarGraph/>
+            </div>
         </div>
-        
-        {/* <SelectTag/> */}
-        {/* <Spendings/> */}
-        {/* <Notes/> */}
-        
-        
-        {/* <BarGraph/> */}
       </div>
-      <dix className="w-[523px] h-[979px] bg-white mt-14 ml-3 border border-black/25 rounded-[10px]">
-
+      {/*Transaction box*/}
+      <dix className="w-[523px] h-[962px] bg-white mt-14 ml-3 border border-black/25 rounded-[10px]">
+          <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">Transaction</div>
+          <div className="ml-10">
+              <Transaction/>
+              <Transaction/>
+              <Transaction/>
+          </div>
       </dix>
     </div>
   );
