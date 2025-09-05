@@ -4,6 +4,8 @@ import SelectTag from "../components/Ohma/SelectTag";
 import Income from "../components/Ohma/Income";
 import Notes from "../components/Ohma/Notes";
 import InsertBtn from "../components/Ohma/InsertBtn";
+import ExpenseBtn from "../components/Ohma/ExpenseBtn";
+import Spendings from "../components/Ohma/Spendings";
 
 function AddExpenseTrans() {
     return (
@@ -25,14 +27,14 @@ function AddExpenseTrans() {
                         </div>
 
                         <div className="col-span-4 w-90">
-                            <Income/>
+                            <Spendings/>
                         </div>
                     </div>
                     <div className="w-140">
                         <Notes/>
                     </div>
                     <div className="mt-6 ml-118">
-                        <InsertBtn/>  
+                        <ExpenseBtn/>  
                     </div>
                 </div>
             </div>
