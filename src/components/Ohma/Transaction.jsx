@@ -1,8 +1,8 @@
-import "../tailwind.css";
+import "../../tailwind.css";
 
 function Transaction({ variant = "expense" }) {
   const base =
-    "w-[443px] h-[66px] border border-[rgba(0,0,0,0.25)] gap-[10px] px-[16px] py-[8px]";
+    "w-[443px] h-[66px] border-b border-[rgba(0,0,0,0.25)] gap-[10px] px-[16px] py-[8px]";
   const variants = {
     income: "text-[#9AD24B]",
     expense: "text-[#E16451]",

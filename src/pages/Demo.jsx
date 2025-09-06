@@ -1,6 +1,6 @@
 import "../tailwind.css";
-import Transaction from "../components/Transaction.jsx";
-import InsertBtn from "../components/InsertBtn.jsx";
+import Transaction from "../components/Ohma/Transaction.jsx";
+import InsertBtn from "../components/Ohma/InsertBtn";
 import ExpenseBtn from "../components/ExpenseBtn.jsx";
 import Wallet from "../components/Wallet.jsx";
 
