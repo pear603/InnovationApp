@@ -7,46 +7,76 @@ import "../tailwind.css";
 function FinancePanel() {
   const [openPopup, setOpenPopup] = useState(false);
   const [activeType, setActiveType] = useState("");
-  const [budget, setBudget] = useState("");
-  const [goal, setGoal] = useState("");
-  const [errors, setErrors] = useState({ budget: "", goal: "" });
+  const [values, setValues] = useState({
+    Expense: { budget: "" },
+    Income: { goal: "" },
+    Both: { budget: "", goal: "" }
+  });
+  const [errors, setErrors] = useState({
+    Expense: { budget: "" },
+    Income: { goal: "" },
+    Both: { budget: "", goal: "" }
+  });
 
   const handleClick = (type) => {
     if (openPopup && activeType === type) {
+      // Close the popup if clicking the same type
       setOpenPopup(false);
       setActiveType("");
     } else {
+      // Open popup for selected type
       setOpenPopup(true);
       setActiveType(type);
-      setBudget("");
-      setGoal("");
-      setErrors({ budget: "", goal: "" });
+      // Reset error messages for the selected type
+      setErrors((prev) => ({ ...prev, [type]: { ...prev[type], budget: "", goal: "" } }));
     }
   };
 
   const handleBudgetChange = (value) => {
-    setBudget(value);
+    setValues((prev) => ({
+      ...prev,
+      [activeType]: { ...prev[activeType], budget: value }
+    }));
+
     if (!value || isNaN(value) || Number(value) <= 0) {
-      setErrors((prev) => ({ ...prev, budget: "Budget must be > 0 and numeric" }));
+      setErrors((prev) => ({
+        ...prev,
+        [activeType]: { ...prev[activeType], budget: "Budget must be > 0 and numeric" }
+      }));
     } else {
-      setErrors((prev) => ({ ...prev, budget: "" }));
+      setErrors((prev) => ({
+        ...prev,
+        [activeType]: { ...prev[activeType], budget: "" }
+      }));
     }
   };
 
   const handleGoalChange = (value) => {
-    setGoal(value);
+    setValues((prev) => ({
+      ...prev,
+      [activeType]: { ...prev[activeType], goal: value }
+    }));
+
     if (activeType === "Income" && (!value || isNaN(value) || Number(value) <= 0)) {
-      setErrors((prev) => ({ ...prev, goal: "Goal must be > 0 and numeric" }));
+      setErrors((prev) => ({
+        ...prev,
+        [activeType]: { ...prev[activeType], goal: "Goal must be > 0 and numeric" }
+      }));
     } else if (activeType === "Both" && (value === "" || isNaN(value) || Number(value) < 0)) {
-      setErrors((prev) => ({ ...prev, goal: "Goal must be numeric >= 0" }));
+      setErrors((prev) => ({
+        ...prev,
+        [activeType]: { ...prev[activeType], goal: "Goal must be numeric >= 0" }
+      }));
     } else {
-      setErrors((prev) => ({ ...prev, goal: "" }));
+      setErrors((prev) => ({
+        ...prev,
+        [activeType]: { ...prev[activeType], goal: "" }
+      }));
     }
   };
 
   return (
     <div className="relative flex flex-col items-start gap-2">
-
       <div className="flex gap-4 relative">
         <ExpenseButton onClick={() => handleClick("Expense")} />
         <IncomeButton onClick={() => handleClick("Income")} />
@@ -64,10 +94,10 @@ function FinancePanel() {
                 type="number"
                 placeholder="Set Budget Amount |"
                 className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
-                value={budget}
+                value={values.Expense.budget}
                 onChange={(e) => handleBudgetChange(e.target.value)}
               />
-              {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
+              {errors.Expense.budget && <p className="text-red-500 text-sm mt-1">{errors.Expense.budget}</p>}
             </div>
           )}
 
@@ -79,10 +109,10 @@ function FinancePanel() {
                 type="number"
                 placeholder="Set Goal Amount |"
                 className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
-                value={goal}
+                value={values.Income.goal}
                 onChange={(e) => handleGoalChange(e.target.value)}
               />
-              {errors.goal && <p className="text-red-500 text-sm mt-1">{errors.goal}</p>}
+              {errors.Income.goal && <p className="text-red-500 text-sm mt-1">{errors.Income.goal}</p>}
             </div>
           )}
 
@@ -96,10 +126,10 @@ function FinancePanel() {
                   type="number"
                   placeholder="Set Budget Amount |"
                   className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
-                  value={budget}
+                  value={values.Both.budget}
                   onChange={(e) => handleBudgetChange(e.target.value)}
                 />
-                {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
+                {errors.Both.budget && <p className="text-red-500 text-sm mt-1">{errors.Both.budget}</p>}
               </div>
 
               {/* Goal */}
@@ -109,17 +139,16 @@ function FinancePanel() {
                   type="number"
                   placeholder="Set Goal Amount |"
                   className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
-                  value={goal}
+                  value={values.Both.goal}
                   onChange={(e) => handleGoalChange(e.target.value)}
                 />
-                {errors.goal && <p className="text-red-500 text-sm mt-1">{errors.goal}</p>}
+                {errors.Both.goal && <p className="text-red-500 text-sm mt-1">{errors.Both.goal}</p>}
               </div>
             </>
           )}
 
         </div>
       )}
-
     </div>
   );
 }
