@@ -10,6 +10,7 @@ function WalletName() {
             <input
               type="text"
               placeholder="Name Your Wallet"
+              maxLength={20}
               className="ml-[15px] w-full bg-transparent outline-none text-[16px] text-[#707376]"
             />
           </div>
