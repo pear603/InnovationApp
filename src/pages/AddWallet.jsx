@@ -1,4 +1,5 @@
 import "../tailwind.css";
+import { Link } from "react-router-dom";
 
 import WalletName from "../components/WalletName";
 import ShowDailyBudget from "../components/ShowDailyBudget";
@@ -14,9 +15,11 @@ function AddWallet() {
         <div className="flex justify-center items-center pt-6 sm:pt-[60px]">
           <div className="w-[90%] sm:w-[632px] h-auto sm:h-[424px] bg-white rounded-lg border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)]">
             <div className="w-full h-[40px] bg-white rounded-lg border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)] relative">
-              <button className="w-[25px] h-[25px] bg-white border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.1)] rounded flex items-center justify-center absolute right-2 top-1/2 -translate-y-1/2 hover:bg-gray-200">
+              <Link to="/">
+              <div className="w-[25px] h-[25px] bg-white border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.1)] rounded flex items-center justify-center absolute right-2 top-1/2 -translate-y-1/2 hover:bg-gray-200">
                 ✖
-              </button>
+              </div>
+              </Link>
             </div>
             <div className="w-full h-auto sm:h-[344px] mt-5 sm:mt-[20px] flex flex-col items-center bg-transparent">
               <div className="w-full sm:w-[631px] h-auto sm:h-[173px] px-4 sm:px-[40px] bg-transparent flex flex-col sm:flex-row items-start gap-3 sm:gap-[12px]">
@@ -34,9 +37,11 @@ function AddWallet() {
               <div className="w-full sm:w-[552px] h-[19px] bg-transparent mt-5 sm:mt-[20px] flex flex-row">
                 <ShowDailyBudget />
               </div>
+              <Link to="/walletlist">
               <div className="w-full sm:w-[552px] h-[52px] bg-transparent mt-2 sm:mt-[10px] flex flex-row justify-end">
                 <CreateButton />
               </div>
+              </Link>
             </div>
           </div>
         </div>
