@@ -2,6 +2,8 @@ import { useState } from "react";
 import ExpenseButton from "./ExpenseButton";
 import IncomeButton from "./IncomeButton";
 import BothButton from "./BothButton";
+import ShowDailyBudget from "./ShowDailyBudget";
+import ShowDailyGoal from "./ShowDailyGoal";
 import "../tailwind.css";
 
 function FinancePanel() {
@@ -20,14 +22,11 @@ function FinancePanel() {
 
   const handleClick = (type) => {
     if (openPopup && activeType === type) {
-      // Close the popup if clicking the same type
       setOpenPopup(false);
       setActiveType("");
     } else {
-      // Open popup for selected type
       setOpenPopup(true);
       setActiveType(type);
-      // Reset error messages for the selected type
       setErrors((prev) => ({ ...prev, [type]: { ...prev[type], budget: "", goal: "" } }));
     }
   };
@@ -98,6 +97,9 @@ function FinancePanel() {
                 onChange={(e) => handleBudgetChange(e.target.value)}
               />
               {errors.Expense.budget && <p className="text-red-500 text-sm mt-1">{errors.Expense.budget}</p>}
+
+              {/* ShowDailyBudget */}
+              <ShowDailyBudget budget={values.Expense.budget} />
             </div>
           )}
 
@@ -113,6 +115,9 @@ function FinancePanel() {
                 onChange={(e) => handleGoalChange(e.target.value)}
               />
               {errors.Income.goal && <p className="text-red-500 text-sm mt-1">{errors.Income.goal}</p>}
+
+              {/* ShowDailyGoal */}
+              <ShowDailyGoal goal={values.Income.goal} />
             </div>
           )}
 
@@ -130,6 +135,9 @@ function FinancePanel() {
                   onChange={(e) => handleBudgetChange(e.target.value)}
                 />
                 {errors.Both.budget && <p className="text-red-500 text-sm mt-1">{errors.Both.budget}</p>}
+
+                {/* ShowDailyBudget */}
+                <ShowDailyBudget budget={values.Both.budget} />
               </div>
 
               {/* Goal */}
@@ -143,6 +151,7 @@ function FinancePanel() {
                   onChange={(e) => handleGoalChange(e.target.value)}
                 />
                 {errors.Both.goal && <p className="text-red-500 text-sm mt-1">{errors.Both.goal}</p>}
+
               </div>
             </>
           )}

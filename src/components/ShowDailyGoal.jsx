@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../tailwind.css";
 
-function ShowDailyBudget() {
+function ShowDailyGoal() {
   const [checked, setChecked] = useState(false);
 
   return (
@@ -12,9 +12,9 @@ function ShowDailyBudget() {
         onChange={() => setChecked(!checked)}
         className="w-5 h-5 border-gray-300 rounded checked:bg-green-600"
       />
-      <span className="text-[16px] text-black">Show Daily Budget</span>
+      <span className="text-[16px] text-black">Show Daily Goal</span>
     </label>
   );
 }
 
-export default ShowDailyBudget;
+export default ShowDailyGoal;
