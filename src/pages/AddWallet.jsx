@@ -28,17 +28,14 @@ function AddWallet() {
                   <WalletName />
                 </div>
               </div>
-              <div className="w-full sm:w-[552px] h-[16px] bg-transparent mt-2 sm:mt-[10px] flex flex-row items-center justify-start">
+              <div className="w-full sm:w-[552px] h-[16px] bg-transparent mt-2 sm:mt-[20px] flex flex-row items-center justify-start">
                 <p className="text-sm sm:text-[16px]">Wallet Type</p>
               </div>
-              <div className="w-full sm:w-[550px] h-[40px] bg-transparent mt-2 sm:mt-[10px] gap-4 sm:gap-[17px] flex flex-row flex-wrap sm:flex-nowrap">
+              <div className="w-full sm:w-[550px] h-[40px] bg-transparent mt-2 sm:mt-[20px] gap-4 sm:gap-[17px] flex flex-row flex-wrap sm:flex-nowrap">
                 <FinancePanel />
               </div>
-              <div className="w-full sm:w-[552px] h-[19px] bg-transparent mt-5 sm:mt-[20px] flex flex-row">
-                <ShowDailyBudget />
-              </div>
               <Link to="/walletlist">
-              <div className="w-full sm:w-[552px] h-[52px] bg-transparent mt-2 sm:mt-[10px] flex flex-row justify-end">
+              <div className="w-full sm:w-[552px] h-[52px] bg-transparent mt-2 sm:mt-[30px] flex flex-row justify-end">
                 <CreateButton />
               </div>
               </Link>
