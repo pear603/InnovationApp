@@ -16,9 +16,9 @@ function AddWallet() {
           <div className="w-[90%] sm:w-[632px] h-auto sm:h-[424px] bg-white rounded-lg border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)]">
             <div className="w-full h-[40px] bg-white rounded-lg border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)] relative">
               <Link to="/">
-              <div className="w-[25px] h-[25px] bg-white border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.1)] rounded flex items-center justify-center absolute right-2 top-1/2 -translate-y-1/2 hover:bg-gray-200">
-                ✖
-              </div>
+                <div className="w-[25px] h-[25px] bg-white border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.1)] rounded flex items-center justify-center absolute right-2 top-1/2 -translate-y-1/2 hover:bg-gray-200">
+                  ✖
+                </div>
               </Link>
             </div>
             <div className="w-full h-auto sm:h-[344px] mt-5 sm:mt-[20px] flex flex-col items-center bg-transparent">
@@ -28,20 +28,12 @@ function AddWallet() {
                   <WalletName />
                 </div>
               </div>
-              <div className="w-full sm:w-[552px] h-[16px] bg-transparent mt-2 sm:mt-[10px] flex flex-row items-center justify-start">
+              <div className="w-full sm:w-[552px] h-[16px] bg-transparent mt-2 sm:mt-[40px] flex flex-row items-center justify-start">
                 <p className="text-sm sm:text-[16px]">Wallet Type</p>
               </div>
-              <div className="w-full sm:w-[550px] h-[40px] bg-transparent mt-2 sm:mt-[10px] gap-4 sm:gap-[17px] flex flex-row flex-wrap sm:flex-nowrap">
+              <div className="w-full sm:w-[550px] h-[40px] bg-transparent mt-2 sm:mt-[15px] gap-4 sm:gap-[17px] flex flex-row flex-wrap sm:flex-nowrap">
                 <FinancePanel />
               </div>
-              <div className="w-full sm:w-[552px] h-[19px] bg-transparent mt-5 sm:mt-[20px] flex flex-row">
-                <ShowDailyBudget />
-              </div>
-              <Link to="/walletlist">
-              <div className="w-full sm:w-[552px] h-[52px] bg-transparent mt-2 sm:mt-[10px] flex flex-row justify-end">
-                <CreateButton />
-              </div>
-              </Link>
             </div>
           </div>
         </div>
