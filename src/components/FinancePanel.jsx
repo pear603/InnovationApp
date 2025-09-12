@@ -4,6 +4,7 @@ import IncomeButton from "./IncomeButton";
 import BothButton from "./BothButton";
 import ShowDailyBudget from "./ShowDailyBudget";
 import ShowDailyGoal from "./ShowDailyGoal";
+import CreateButton from "./CreateButton";
 import "../tailwind.css";
 
 function FinancePanel() {
@@ -100,6 +101,10 @@ function FinancePanel() {
 
               {/* ShowDailyBudget */}
               <ShowDailyBudget budget={values.Expense.budget} />
+
+              <div className="w-full flex justify-end mt-2">
+                <CreateButton />
+              </div>
             </div>
           )}
 
@@ -118,6 +123,10 @@ function FinancePanel() {
 
               {/* ShowDailyGoal */}
               <ShowDailyGoal goal={values.Income.goal} />
+
+              <div className="w-full flex justify-end mt-2">
+                <CreateButton />
+              </div>
             </div>
           )}
 
@@ -152,6 +161,12 @@ function FinancePanel() {
                 />
                 {errors.Both.goal && <p className="text-red-500 text-sm mt-1">{errors.Both.goal}</p>}
 
+                {/* ShowDailyGoal */}
+                <ShowDailyGoal goal={values.Both.goal} />
+
+                <div className="w-full flex justify-end mt-2">
+                  <CreateButton />
+                </div>
               </div>
             </>
           )}
