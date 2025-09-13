@@ -1,3 +1,4 @@
+// src/components/FinancePanel.jsx
 import { useState } from "react";
 import ExpenseButton from "./ExpenseButton";
 import IncomeButton from "./IncomeButton";
@@ -7,165 +8,112 @@ import ShowDailyGoal from "./ShowDailyGoal";
 import CreateButton from "./CreateButton";
 import "../tailwind.css";
 
-function FinancePanel() {
+function FinancePanel({ values, onChange, onCreate }) {
   const [openPopup, setOpenPopup] = useState(false);
   const [activeType, setActiveType] = useState("");
-  const [values, setValues] = useState({
-    Expense: { budget: "" },
-    Income: { goal: "" },
-    Both: { budget: "", goal: "" }
-  });
-  const [errors, setErrors] = useState({
-    Expense: { budget: "" },
-    Income: { goal: "" },
-    Both: { budget: "", goal: "" }
-  });
 
-  const handleClick = (type) => {
-    if (openPopup && activeType === type) {
+  // Toggle popup and set active type
+  const handleClick = (t) => {
+    if (openPopup && activeType === t) {
       setOpenPopup(false);
       setActiveType("");
     } else {
       setOpenPopup(true);
-      setActiveType(type);
-      setErrors((prev) => ({ ...prev, [type]: { ...prev[type], budget: "", goal: "" } }));
+      setActiveType(t);
     }
   };
 
-  const handleBudgetChange = (value) => {
-    setValues((prev) => ({
-      ...prev,
-      [activeType]: { ...prev[activeType], budget: value }
-    }));
-
-    if (!value || isNaN(value) || Number(value) <= 0) {
-      setErrors((prev) => ({
-        ...prev,
-        [activeType]: { ...prev[activeType], budget: "Budget must be > 0 and numeric" }
-      }));
-    } else {
-      setErrors((prev) => ({
-        ...prev,
-        [activeType]: { ...prev[activeType], budget: "" }
-      }));
-    }
-  };
-
-  const handleGoalChange = (value) => {
-    setValues((prev) => ({
-      ...prev,
-      [activeType]: { ...prev[activeType], goal: value }
-    }));
-
-    if (activeType === "Income" && (!value || isNaN(value) || Number(value) <= 0)) {
-      setErrors((prev) => ({
-        ...prev,
-        [activeType]: { ...prev[activeType], goal: "Goal must be > 0 and numeric" }
-      }));
-    } else if (activeType === "Both" && (value === "" || isNaN(value) || Number(value) < 0)) {
-      setErrors((prev) => ({
-        ...prev,
-        [activeType]: { ...prev[activeType], goal: "Goal must be numeric >= 0" }
-      }));
-    } else {
-      setErrors((prev) => ({
-        ...prev,
-        [activeType]: { ...prev[activeType], goal: "" }
-      }));
-    }
+  // Update the corresponding field in wallet data
+  const handleValueChange = (field, val) => {
+    let updatedValues = { ...values[activeType] };
+    updatedValues[field] = val;
+    onChange(activeType, updatedValues);
   };
 
   return (
     <div className="relative flex flex-col items-start gap-2">
+      {/* Type buttons */}
       <div className="flex gap-4 relative">
         <ExpenseButton onClick={() => handleClick("Expense")} />
         <IncomeButton onClick={() => handleClick("Income")} />
         <BothButton onClick={() => handleClick("Both")} />
       </div>
 
+      {/* Popup panel */}
       {openPopup && (
         <div className="absolute left-0 top-full mt-2 w-[551px] bg-white border border-gray-300 rounded-lg shadow-md flex flex-col items-start justify-start p-4 z-10">
 
-          {/* Expense */}
+          {/* Expense type */}
           {activeType === "Expense" && (
             <div className="w-full">
               <p className="text-[16px] mb-1">Budget</p>
               <input
                 type="number"
-                placeholder="Set Budget Amount |"
+                placeholder="Set Budget Amount"
                 className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                 value={values.Expense.budget}
-                onChange={(e) => handleBudgetChange(e.target.value)}
+                onChange={(e) => handleValueChange("budget", e.target.value)}
               />
-              {errors.Expense.budget && <p className="text-red-500 text-sm mt-1">{errors.Expense.budget}</p>}
-
-              {/* ShowDailyBudget */}
-              <ShowDailyBudget budget={values.Expense.budget} />
-
+              <ShowDailyBudget
+                checked={values.Expense.showDailyBudget}
+                onChange={(val) => handleValueChange("showDailyBudget", val)}
+              />
               <div className="w-full flex justify-end mt-2">
-                <CreateButton />
+                <CreateButton onClick={onCreate} />
               </div>
             </div>
           )}
 
-          {/* Income */}
+          {/* Income type */}
           {activeType === "Income" && (
             <div className="w-full">
               <p className="text-[16px] mb-1">Goal</p>
               <input
                 type="number"
-                placeholder="Set Goal Amount |"
+                placeholder="Set Goal Amount"
                 className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                 value={values.Income.goal}
-                onChange={(e) => handleGoalChange(e.target.value)}
+                onChange={(e) => handleValueChange("goal", e.target.value)}
               />
-              {errors.Income.goal && <p className="text-red-500 text-sm mt-1">{errors.Income.goal}</p>}
-
-              {/* ShowDailyGoal */}
-              <ShowDailyGoal goal={values.Income.goal} />
-
+              <ShowDailyGoal
+                checked={values.Income.showDailyGoal}
+                onChange={(val) => handleValueChange("showDailyGoal", val)}
+              />
               <div className="w-full flex justify-end mt-2">
-                <CreateButton />
+                <CreateButton onClick={onCreate} />
               </div>
             </div>
           )}
 
-          {/* Both */}
+          {/* Both type */}
           {activeType === "Both" && (
             <>
-              {/* Budget */}
               <div className="w-full mb-2">
                 <p className="text-[16px] mb-1">Budget</p>
                 <input
                   type="number"
-                  placeholder="Set Budget Amount |"
+                  placeholder="Set Budget Amount"
                   className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                   value={values.Both.budget}
-                  onChange={(e) => handleBudgetChange(e.target.value)}
+                  onChange={(e) => handleValueChange("budget", e.target.value)}
                 />
-                {errors.Both.budget && <p className="text-red-500 text-sm mt-1">{errors.Both.budget}</p>}
-
-                {/* ShowDailyBudget */}
-                <ShowDailyBudget budget={values.Both.budget} />
+                <ShowDailyBudget
+                  checked={values.Both.showDailyBudget}
+                  onChange={(val) => handleValueChange("showDailyBudget", val)}
+                />
               </div>
 
-              {/* Goal */}
               <div className="w-full">
                 <p className="text-[16px] mb-1">Goal</p>
                 <input
                   type="number"
-                  placeholder="Set Goal Amount |"
+                  placeholder="Set Goal Amount"
                   className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                   value={values.Both.goal}
-                  onChange={(e) => handleGoalChange(e.target.value)}
+                  onChange={(e) => handleValueChange("goal", e.target.value)}
                 />
-                {errors.Both.goal && <p className="text-red-500 text-sm mt-1">{errors.Both.goal}</p>}
-
-                {/* ShowDailyGoal */}
-                <ShowDailyGoal goal={values.Both.goal} />
-
                 <div className="w-full flex justify-end mt-2">
-                  <CreateButton />
+                  <CreateButton onClick={onCreate} />
                 </div>
               </div>
             </>
