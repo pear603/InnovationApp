@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../tailwind.css";
+// import "../tailwind.css";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { supabase } from '../assets/supabaseClient';
