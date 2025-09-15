@@ -185,7 +185,7 @@ function Login() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 style={styles.input}
-                                placeholder="Enter youe password" />
+                                placeholder="Enter your password" />
                         </div>
 
                         <button
@@ -303,4 +303,10 @@ const styles = {
         textDecoration: 'underline',
         marginLeft: '0.5rem',
     },
+    note: {
+        textAlign: 'center',
+        marginTop: '1rem',
+        color: '#888',
+        fontSize: '12px',
+    }
 };
