@@ -6,6 +6,8 @@ import { supabase } from '../assets/supabaseClient';
 
 function Login() {
     const navigate = useNavigate();
+    const [loginIdentifier, setLoginIdentifier] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -15,40 +17,96 @@ function Login() {
     const handleAuth = async (e) => {
         e.preventDefault();
 
-        if (!email || !password) {
-            setMessage({ text: 'Please fill in all fields', type: 'error' })
-            return;
+        if (isSignUp) {
+            if (!username || !email || !password) {
+                setMessage({ text: 'Please fill in all fields', type: 'error' })
+                return;
+            }
+        } else {
+            if (!loginIdentifier || !password) {
+                setMessage({ text: 'Please fill in all fields', type: 'error' });
+                return;
+
+            }
         }
 
         setLoading(true);
         setMessage({ text: '', type: '' });
 
         try {
-            let error;
             if (isSignUp) {
-                const { data, error: signUpError } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                 });
 
-                error = signUpError;
-
-                if (!error) {
-                    setMessage({
-                        text: 'Sign up successful! Please check your email for confirmation',
-                        type: 'success'
-                    });
-                    setTimeout(() => navigate("/"), 2000);
+                if (error) {
+                    setMessage({ text: error.message, type: 'error' });
+                } else {
+                    const { error: dbError } = await supabase
+                        .from('Financial Planner')
+                        .insert([
+                            {
+                                User_id: data.user.id,
+                                username: username,
+                                email: email,
+                                created_at: new Date().toISOString()
+                            }
+                        ]);
+                    if (dbError) {
+                        setMessage({ text: dbError.message, type: 'error' });
+                    } else {
+                        setMessage({
+                            text: 'Sign up successful! Please check your email for confirmation',
+                            type: 'success'
+                        });
+                        setTimeout(() => navigate("/"), 2000);
+                    }
                 }
             } else {
-                const { data, error: signInError } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                });
-                error = signInError
+                let authError = null;
+                let authData = null;
 
-                if (!error) {
-                    setMessage({ text: 'Login successful', type: 'success' });
+                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginIdentifier);
+
+                if (isEmail) {
+                    const result = await supabase.auth.signInWithPassword({
+                        email: loginIdentifier,
+                        password,
+                    });
+                    authData = result.data;
+                    authError = result.error;
+                } else {
+                    const { data: userData, error: userError } = await supabase
+                        .from('Financial Planner')
+                        .select("email")
+                        .eq('username', loginIdentifier)
+                        .single();
+
+                    if (userError) {
+                        setMessage({ text: 'Invalid username or password', type: 'error' });
+                        setLoading(false);
+                        return;
+                    }
+
+                    if (userData && userData.email) {
+                        const result = await supabase.auth.signInWithPassword({
+                            email: userData.email,
+                            // .
+                            password: password,
+                        });
+                        authData = result.data;
+                        authError = result.error;
+                    } else {
+                        setMessage({ text: 'Invalid username or password', type: 'error' });
+                        setLoading(false);
+                        return;
+                    }
+                }
+                if (authError) {
+                    setMessage({ text: authError.message, type: 'error' });
+                } else {
+                    setMessage({ text: 'Login successful!', type: 'success' });
                     navigate("/");
                 }
             }
@@ -78,15 +136,47 @@ function Login() {
                     )}
 
                     <form onSubmit={handleAuth} style={styles.form}>
-                        <div style={styles.inputGroup}>
-                            <label htmlFor="email" style={styles.label}>Email</label>
-                            <input type="email"
-                                id="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                style={styles.input}
-                                placeholder="Enter your email" />
-                        </div>
+                        {isSignUp ? (
+                            <>
+                                <div style={styles.inputGroup}>
+                                    <label htmlFor="username" style={styles.label}>Username</label>
+                                    <input
+                                        type="text"
+                                        id="username"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        style={styles.input}
+                                        placeholder="Choose a username"
+                                        disabled={loading}
+                                    />
+                                </div>
+                                <div style={styles.inputGroup}>
+                                    <label htmlFor="email" style={styles.label}>Email</label>
+                                    <input type="email"
+                                        id="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        style={styles.input}
+                                        placeholder="Enter your email" />
+                                </div>
+                            </>
+
+                        ) : (
+                            <div>
+                                <label htmlFor="loginIdentifier" style={styles.label}>
+                                    Username or Email
+                                </label>
+                                <input
+                                    type="text"
+                                    id="loginIdentifier"
+                                    value={loginIdentifier}
+                                    onChange={(e) => setLoginIdentifier(e.target.value)}
+                                    style={styles.input}
+                                    placeholder="Enter your username or email"
+                                    disabled={loading}
+                                />
+                            </div>
+                        )}
 
                         <div style={styles.inputGroup}>
                             <label htmlFor="password" style={styles.label}>Password</label>
@@ -95,7 +185,7 @@ function Login() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 style={styles.input}
-                                placeholder="Enter youe password" />
+                                placeholder="Enter your password" />
                         </div>
 
                         <button
@@ -110,12 +200,22 @@ function Login() {
                     <p style={styles.switchText}>
                         {isSignUp ? 'Already have an account?' : "Don't have an account?"}
                         <button
-                            onClick={() => setIsSignUp(!isSignUp)}
+                            onClick={() => {
+                                setIsSignUp(!isSignUp);
+                                setMessage({ text: '', type: '' });
+                                setLoginIdentifier('');
+                            }}
                             style={styles.switchButton}
+                            disabled={loading}
                         >
                             {isSignUp ? 'Login' : 'Sign Up'}
                         </button>
                     </p>
+                    {!isSignUp && (
+                        <p style={styles.note}>
+                            You can login with either your username or email address
+                        </p>
+                    )}
                 </div>
             </div>
         </>
@@ -203,4 +303,10 @@ const styles = {
         textDecoration: 'underline',
         marginLeft: '0.5rem',
     },
+    note: {
+        textAlign: 'center',
+        marginTop: '1rem',
+        color: '#888',
+        fontSize: '12px',
+    }
 };
