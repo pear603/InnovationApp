@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { use, useState } from "react";
 // import "../tailwind.css";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { supabase } from '../assets/supabaseClient';
 
 function Login() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -37,6 +38,7 @@ function Login() {
                         text: 'Sign up successful! Please check your email for confirmation',
                         type: 'success'
                     });
+                    setTimeout(() => navigate("/"), 2000);
                 }
             } else {
                 const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -47,6 +49,7 @@ function Login() {
 
                 if (!error) {
                     setMessage({ text: 'Login successful', type: 'success' });
+                    navigate("/");
                 }
             }
         } catch (error) {

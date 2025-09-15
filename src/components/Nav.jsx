@@ -1,6 +1,10 @@
 import "../tailwind.css";
 import { Link } from "react-router-dom";
+import { supabase } from '../assets/supabaseClient';
 function Nav() {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
   return (
     <>
       <nav className="bg-[#59A5B2] h-[48px] py-[10px] px-[76px]">
@@ -19,6 +23,9 @@ function Nav() {
               <a href="#" className="text-white  ">
                 Profile
               </a>
+            </li>
+            <li>
+              <button onClick={handleLogout}>Logout</button>
             </li>
           </ul>
         </div>
