@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
-import { Routes, Route } from "react-router-dom";
-
+import { Routes, Route, Navigate } from "react-router-dom";
+import { supabase } from './assets/supabaseClient';
 import Nav from "./components/Nav.jsx";
 import Home from "./pages/Home.jsx";
 import AddWallet from "./pages/AddWallet.jsx";
@@ -10,20 +10,65 @@ import WalletAnalytic from "./pages/WalletAnalytic.jsx";
 import WalletList from "./pages/WalletList.jsx";
 import AddTag from "./pages/AddTag.jsx";
 import Demo from "./pages/Demo.jsx";
+import Login from "./pages/Login.jsx";
 
 function App() {
   const [count, setCount] = useState(0);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const { data: { subscription }, } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    })
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
-      <Nav />
+      {session ? <Nav /> : null}
       <main>
         <Routes>
-          <Route path="/" element={<Home />}></Route>
-          <Route path="/wallet" element={<AddWallet />}></Route>
-          <Route path="/walletanalytic" element={<WalletAnalytic />}></Route>
-          <Route path="/walletlist" element={<WalletList />}></Route>
-          <Route path="/addTag" element={<AddTag />}></Route>
+          <Route
+            path="/login"
+            element={!session ? <Login /> : <Navigate to="/" replace />}
+          />
+
+          <Route
+            path="/"
+            element={session ? <Home /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/wallet"
+            element={session ? <AddWallet /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/walletanalytic"
+            element={session ? <WalletAnalytic /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/walletlist"
+            element={session ? <WalletList /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/addTag"
+            element={session ? <AddTag /> : <Navigate to="/login" replace />}
+          />
+
+          <Route path="*" element={<Navigate to={session ? "/" : "/login"} replace />} />
         </Routes>
       </main>
     </div>
