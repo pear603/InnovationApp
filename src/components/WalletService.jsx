@@ -1,4 +1,4 @@
-// src/components/FinancePanel.jsx
+// src/components/WalletService.jsx
 import { useState } from "react";
 import ExpenseButton from "./ExpenseButton";
 import IncomeButton from "./IncomeButton";
@@ -8,7 +8,7 @@ import ShowDailyGoal from "./ShowDailyGoal";
 import CreateButton from "./CreateButton";
 import "../tailwind.css";
 
-function FinancePanel({ values, onChange, onCreate }) {
+function WalletService({ values, onChange, onCreate }) {
   const [openPopup, setOpenPopup] = useState(false);
   const [activeType, setActiveType] = useState("");
 
@@ -23,11 +23,62 @@ function FinancePanel({ values, onChange, onCreate }) {
     }
   };
 
+  const checkWalletType = () => {
+    switch (activeType) {
+      case "Expense":
+        return values.Expense;
+      case "Income":
+        return values.Income;
+      case "Both":
+        return values.Both;
+      default:
+        return {};
+    }
+  };
+
+  // Validate finance fields
+  const validateFinance = () => {
+    switch (activeType) {
+      case "Expense":
+        if (Number(values.Expense.budget) <= 0) {
+          alert("NegativeBudgetError");
+          return false;
+        }
+        break;
+      case "Income":
+        if (Number(values.Income.goal) <= 0) {
+          alert("NegativeGoalError");
+          return false;
+        }
+        break;
+      case "Both":
+        if (Number(values.Both.budget) <= 0) {
+          alert("NegativeBudgetOrGoalError");
+          return false;
+        }
+        if (Number(values.Both.goal) < 0) {
+          alert("NegativeBudgetOrGoalError");
+          return false;
+        }
+        break;
+      default:
+        alert("Please select a wallet type");
+        return false;
+    }
+    return true;
+  };
+
   // Update the corresponding field in wallet data
   const handleValueChange = (field, val) => {
-    let updatedValues = { ...values[activeType] };
-    updatedValues[field] = val;
+    const currentValues = checkWalletType();
+    const updatedValues = { ...currentValues, [field]: val };
     onChange(activeType, updatedValues);
+  };
+
+  // Handle Create click
+  const handleCreateClick = () => {
+    if (!validateFinance()) return;
+    onCreate();
   };
 
   return (
@@ -59,7 +110,7 @@ function FinancePanel({ values, onChange, onCreate }) {
                 onChange={(val) => handleValueChange("showDailyBudget", val)}
               />
               <div className="w-full flex justify-end mt-2">
-                <CreateButton onClick={onCreate} />
+                <CreateButton onClick={handleCreateClick} />
               </div>
             </div>
           )}
@@ -80,7 +131,7 @@ function FinancePanel({ values, onChange, onCreate }) {
                 onChange={(val) => handleValueChange("showDailyGoal", val)}
               />
               <div className="w-full flex justify-end mt-2">
-                <CreateButton onClick={onCreate} />
+                <CreateButton onClick={handleCreateClick} />
               </div>
             </div>
           )}
@@ -113,7 +164,7 @@ function FinancePanel({ values, onChange, onCreate }) {
                   onChange={(e) => handleValueChange("goal", e.target.value)}
                 />
                 <div className="w-full flex justify-end mt-2">
-                  <CreateButton onClick={onCreate} />
+                  <CreateButton onClick={handleCreateClick} />
                 </div>
               </div>
             </>
@@ -125,4 +176,4 @@ function FinancePanel({ values, onChange, onCreate }) {
   );
 }
 
-export default FinancePanel;
+export default WalletService;
