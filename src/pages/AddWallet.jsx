@@ -21,25 +21,6 @@ function AddWallet() {
   });
 
   const handleCreateWallet = async () => {
-    let iconUrl = null;
-
-    // Upload image to Storage
-    if (walletData.iconFile) {
-      const fileName = `${Date.now()}_${walletData.iconFile.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("WalletIcon")
-        .upload(fileName, walletData.iconFile, { cacheControl: '3600', upsert: true });
-
-      if (!uploadError) {
-        const { data: publicData } = supabase.storage
-          .from("WalletIcon")
-          .getPublicUrl(fileName);
-        iconUrl = publicData.publicUrl;
-      }
-    }
-
-    const walletId = crypto.randomUUID();
-
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
@@ -47,6 +28,22 @@ function AddWallet() {
       return;
     }
 
+    // Upload wallet icon if exists
+    let iconUrl = null;
+    if (walletData.iconFile) {
+      const { data, error } = await supabase
+        .storage
+        .from('WalletIcon')
+        .upload(`${user.id}/${crypto.randomUUID()}`, walletData.iconFile);
+      if (error) {
+        console.log(error);
+        alert("Failed to upload wallet icon");
+      } else {
+        iconUrl = data.path; 
+      }
+    }
+
+    const walletId = crypto.randomUUID();
     const now = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" });
 
     // Insert into Wallet table
