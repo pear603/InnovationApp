@@ -1,7 +1,5 @@
-// CreateButton.jsx
 import "../tailwind.css";
 
-// Generic button for creating wallet with updated layout
 function CreateButton({ onClick }) {
   return (
     <div className="flex justify-center items-center h-full">
