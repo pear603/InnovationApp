@@ -10,7 +10,7 @@ function Nav() {
       <nav className="bg-[#59A5B2] h-[48px] py-[10px] px-[76px]">
         <div className="flex item-center justify-between ">
           <div className="text-white text-base font-bold ">
-            <Link to="/">Monly</Link>
+            <Link to="/walletlist">Monly</Link>
           </div>
           <ul className="flex gap-16 pr-[78px] text-base">
             <li>

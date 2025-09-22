@@ -44,7 +44,7 @@ function App() {
         <Routes>
           <Route
             path="/login"
-            element={!session ? <Login /> : <Navigate to="/" replace />}
+            element={!session ? <Login /> : <Navigate to="/walletlist" replace />}
           />
 
           <Route
