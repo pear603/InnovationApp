@@ -1,4 +1,3 @@
-// src/pages/AddWallet.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../assets/supabaseClient";
@@ -21,25 +20,6 @@ function AddWallet() {
   });
 
   const handleCreateWallet = async () => {
-    let iconUrl = null;
-
-    // Upload image to Storage
-    if (walletData.iconFile) {
-      const fileName = `${Date.now()}_${walletData.iconFile.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("WalletIcon")
-        .upload(fileName, walletData.iconFile, { cacheControl: '3600', upsert: true });
-
-      if (!uploadError) {
-        const { data: publicData } = supabase.storage
-          .from("WalletIcon")
-          .getPublicUrl(fileName);
-        iconUrl = publicData.publicUrl;
-      }
-    }
-
-    const walletId = crypto.randomUUID();
-
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
@@ -47,6 +27,31 @@ function AddWallet() {
       return;
     }
 
+    // Upload wallet icon if exists
+    let iconUrl = null;
+    if (walletData.iconFile) {
+      const fileName = `${user.id}/${crypto.randomUUID()}-${walletData.iconFile.name}`;
+
+      const { data, error } = await supabase
+        .storage
+        .from("WalletIcon")
+        .upload(fileName, walletData.iconFile);
+
+      if (error) {
+        console.log(error);
+        alert("Failed to upload wallet icon");
+      } else {
+        // public URL
+        const { data: publicUrlData } = supabase
+          .storage
+          .from("WalletIcon")
+          .getPublicUrl(fileName);
+
+        iconUrl = publicUrlData.publicUrl; 
+      }
+    }
+
+    const walletId = crypto.randomUUID();
     const now = new Date().toLocaleString("sv-SE", { timeZone: "Asia/Bangkok" });
 
     // Insert into Wallet table
@@ -129,7 +134,7 @@ function AddWallet() {
             <div className="w-full h-[40px] bg-white rounded-lg border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)] relative">
               <div
                 className="w-[25px] h-[25px] bg-white border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.1)] rounded flex items-center justify-center absolute right-2 top-1/2 -translate-y-1/2 hover:bg-gray-200"
-                onClick={() => navigate("/walletlist")}
+                onClick={() => navigate("/")}
               >
                 ✖
               </div>

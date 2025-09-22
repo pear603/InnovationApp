@@ -60,7 +60,7 @@ function Login() {
                             text: 'Sign up successful! Please check your email for confirmation',
                             type: 'success'
                         });
-                        setTimeout(() => navigate("/"), 2000);
+                        setTimeout(() => navigate("/walletlist"), 2000);
                     }
                 }
             } else {
@@ -107,7 +107,7 @@ function Login() {
                     setMessage({ text: authError.message, type: 'error' });
                 } else {
                     setMessage({ text: 'Login successful!', type: 'success' });
-                    navigate("/");
+                    navigate("/walletlist");
                 }
             }
         } catch (error) {

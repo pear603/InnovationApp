@@ -1,4 +1,3 @@
-// src/components/WalletService.jsx
 import { useState } from "react";
 import ExpenseButton from "./ExpenseButton";
 import IncomeButton from "./IncomeButton";
