@@ -11,7 +11,7 @@ import BalanceLeft from "../components/BalanceLeft";
 import ExpenseButton from "../components/ExpenseBtn";
 import Transaction from "../components/Ohma/Transaction";
 
-function InWallet() {
+function BothWalletDetails() {
   return (
     <div className="w-screen h-screen flex flex-row items-start justify-center bg-[#E2EFF3]">
       <div className=" ml-[76px] flex flex-col items-start space-y-2 bg-transparent">
@@ -59,4 +59,4 @@ function InWallet() {
 }
 
 
-export default InWallet
+export default BothWalletDetails

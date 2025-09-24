@@ -1,7 +1,7 @@
-import { supabase } from "../assets/supabaseClient"; // adjust path
+import { supabase } from "../assets/supabaseClient"; 
 
 export const TagService = {
-  // 1️⃣ Validate tag length (< 20 chars)
+  // Validate tag length (< 20 chars)
   validateTagName: (tagName) => {
     const trimmed = tagName.trim();
     if (!trimmed) return { valid: false, error: "Tag name cannot be empty" };
@@ -9,7 +9,7 @@ export const TagService = {
     return { valid: true };
   },
 
-  // 2️⃣ Fetch tags for a user
+  // Fetch tags for a user
   getTagName: async (userId) => {
     const { data, error } = await supabase
       .from("Tag")
@@ -22,7 +22,7 @@ export const TagService = {
   }));
   },
 
-  // 3️⃣ Check uniqueness
+  // Check uniqueness
 checkUnique: (tagName, tagList,globalTags) => {
     const normalizedInput = tagName.trim().toLowerCase();
   const existsInUserTags  = tagList.some(
@@ -35,7 +35,7 @@ checkUnique: (tagName, tagList,globalTags) => {
   return !(existsInUserTags || existsInGlobalTags);
 },
 
-  // 4️⃣ Create a tag
+  // Create a tag
   createTag: async (tagName, userId) => {
     const trimmed = tagName.trim();
     const newTagId = crypto.randomUUID();
