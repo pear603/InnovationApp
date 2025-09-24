@@ -14,6 +14,12 @@ function Nav() {
           </div>
           <ul className="flex gap-16 pr-[78px] text-base">
             <li>
+              <Link to="/walletDetails">WalletDetails</Link>
+            </li>
+            <li>
+              <Link to="/addIncomeTx">AddTx</Link>
+            </li>
+            <li>
               <Link to="/walletlist">My Wallet</Link>
             </li>
             <li>

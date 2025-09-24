@@ -1,6 +1,7 @@
 import "../tailwind.css";
+import React, { useState } from "react";
 
-function NameTag({ children }) {
+function NameTag({ value, onChange, children }) {
   return (
     <>
       {/* <div className="pl-[43px] pt-[31px] pr-[29px]"> */}
@@ -12,9 +13,12 @@ function NameTag({ children }) {
         >
           <input
             type="text"
+            value={value}
             placeholder="Type Tag Name"
+            onChange={(e) => onChange(e.target.value)}
             className="ml-[15px] w-full bg-transparent outline-none text-[16px] text-[#707376]"
           />
+
         </div>
         <div className="pt-[16px] items-end justify-end flex">{children}</div>
       </div>
