@@ -12,7 +12,6 @@ function Wallet({ name, imageUrl }) {
           />
         ) : (
           <div className="w-[173px] h-[173px] bg-[#C3C0C0] rounded-lg flex items-center justify-center">
-            No Image
           </div>
         )}
       </div>
