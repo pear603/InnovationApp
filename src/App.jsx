@@ -11,6 +11,7 @@ import WalletList from "./pages/WalletList.jsx";
 import AddTag from "./pages/AddTag.jsx";
 import Demo from "./pages/Demo.jsx";
 import Login from "./pages/Login.jsx";
+import AddExpenseTrans from "./pages/AddExpenseTrans.jsx";
 import AddIncomeTrans from "./pages/AddIncomeTrans.jsx";
 import BothWalletDetails from "./pages/BothWalletDetails.jsx";
 import ExpenseWalletDetails from "./pages/ExpenseWalletDetails.jsx";
@@ -77,10 +78,35 @@ function App() {
             path="/addIncomeTx"
             element={session ? <AddIncomeTrans /> : <Navigate to="/login" replace />} // for testing
           />
+
+           <Route
+            path="/ExpenseTx"
+            element={session ? <AddExpenseTrans /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/IncomeTx"
+            element={session ? <AddIncomeTrans /> : <Navigate to="/login" replace />}
+          />
+
+
           <Route
             path="/walletDetails"
             element={session ? <IncomeWalletDetails /> : <Navigate to="/login" replace />} // for testing
           />
+          <Route
+            path="/expense-wallet/:id"
+            element={session ? <ExpenseWalletDetails /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/income-wallet/:id"
+            element={session ? <IncomeWalletDetails /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/both-wallet/:id"
+            element={session ? <BothWalletDetails /> : <Navigate to="/login" replace />}
+          />
+          
+          
           <Route path="*" element={<Navigate to={session ? "/" : "/login"} replace />} />
         </Routes>
       </main>
