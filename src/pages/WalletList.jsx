@@ -3,6 +3,7 @@ import AddBtn from "../components/AddBtn";
 import Wallet from "../components/Wallet";
 import { useEffect, useState } from "react";
 import { supabase } from "../assets/supabaseClient";
+import { Link } from "react-router-dom";
 
 const WalletList = () => {
   const [fetchError, setFetchError] = useState(null);
@@ -12,7 +13,7 @@ const WalletList = () => {
     const fetchWallets = async () => {
       const { data, error } = await supabase
         .from("Wallet")
-        .select("Wallet_id, WalletName, WalletIcon"); 
+        .select("Wallet_id, WalletName, WalletIcon, WalletType"); 
 
       if (error) {
         setFetchError("Could not fetch the wallets");
@@ -22,7 +23,8 @@ const WalletList = () => {
         const walletsWithUrl = data.map((wallet) => ({
           id: wallet.Wallet_id,
           name: wallet.WalletName,
-          imageUrl: wallet.WalletIcon
+          imageUrl: wallet.WalletIcon,
+          type: wallet.WalletType, 
         }));
         setWallets(walletsWithUrl);
         setFetchError(null);
@@ -31,6 +33,19 @@ const WalletList = () => {
 
     fetchWallets();
   }, []);
+
+  const getWalletLink = (wallet) => {
+    switch (wallet.type?.toLowerCase()) {
+      case "expense":
+        return `/expense-wallet/${wallet.id}`;
+      case "income":
+        return `/income-wallet/${wallet.id}`;
+      case "both":
+        return `/both-wallet/${wallet.id}`;
+      default:
+        return `/wallet/${wallet.id}`; 
+    }
+  };
 
   return (
     <div className="relative w-screen h-screen bg-[#E2EFF3] flex justify-center items-center">
@@ -43,11 +58,12 @@ const WalletList = () => {
           <div className="flex justify-center items-center text-center w-full h-full">
             <div className="text-[#969393] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
               {wallets.map((wallet) => (
-                <Wallet
-                  key={wallet.id}
-                  name={wallet.name}
-                  imageUrl={wallet.imageUrl} 
-                />
+                <Link key={wallet.id} to={getWalletLink(wallet)}>
+                  <Wallet
+                    name={wallet.name}
+                    imageUrl={wallet.imageUrl}
+                  />
+                </Link>
               ))}
             </div>
           </div>
