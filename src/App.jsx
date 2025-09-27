@@ -79,8 +79,8 @@ function App() {
             element={session ? <AddIncomeTrans /> : <Navigate to="/login" replace />} // for testing
           />
 
-           <Route
-            path="/ExpenseTx"
+          <Route
+            path="/ExpenseTx/:id?"
             element={session ? <AddExpenseTrans /> : <Navigate to="/login" replace />}
           />
           <Route
@@ -105,8 +105,8 @@ function App() {
             path="/both-wallet/:id"
             element={session ? <BothWalletDetails /> : <Navigate to="/login" replace />}
           />
-          
-          
+
+
           <Route path="*" element={<Navigate to={session ? "/" : "/login"} replace />} />
         </Routes>
       </main>
