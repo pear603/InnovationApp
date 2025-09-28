@@ -1,8 +1,6 @@
 import "../../tailwind.css";
-import { Link } from "react-router-dom";
 import { supabase } from "../../assets/supabaseClient";
 import { useEffect, useState } from "react";
-
 
 function SelectTag({ onTagSelect }) {
   const [fetchError, setFetchError] = useState(null);
@@ -34,21 +32,22 @@ function SelectTag({ onTagSelect }) {
   const handleTagChange = (e) => {
     setSelectedTag(e.target.value);
     onTagSelect(e.target.value);
-  }
+  };
 
   return (
     <>
-      <div class="relative group">
-        <h1 class="flex flex-col text-[15px] font-[400]">
+      <div className="relative group">
+        <h1 className="flex flex-col text-[15px] font-[400]">
           Select Tag
-          <select class="flex flex-row text-[14px] drop-shadow-lg justify-left bg-white-500 w-full h-8 rounded-[8px] text-black border border-black/15 hover:bg-[#E7EBEE] focus:outline-none mt-[4px] pl-3 pt-[4px] text-opacity-[0]"
+          <select
+            className="flex flex-row text-[14px] drop-shadow-lg justify-left bg-white-500 w-full h-8 rounded-[8px] text-black border border-black/15 hover:bg-[#E7EBEE] focus:outline-none mt-[4px] pl-3 pb-1 text-opacity-[0]"
             id="tags"
             value={selectedTag}
             onChange={handleTagChange}
           >
-            <option value="" disabled hidden>Tag</option>
+            <option key="default" value="" disabled hidden>Tag</option>
             {tags.map((tag) => (
-              <option key={tag.Tag_id} value={tag.Name}>
+              <option key={tag.id} value={tag.id}>
                 {tag.name}
               </option>
             ))}
@@ -60,18 +59,3 @@ function SelectTag({ onTagSelect }) {
 }
 
 export default SelectTag;
-
-
-{/* <button class="flex flex-row text-[14px] drop-shadow-lg justify-left bg-white-500 w-full h-8 rounded-[8px] text-black rounded border border-black/15 hover:bg-blue-400 focus:outline-none mt-[4px] pl-3 pt-[4px] text-opacity-[0]">
-                Tags
-                <span class="pt-1 pl-35 text-[10px]"> V</span>
-            </button>
-            <div class=" absolute z-50 hidden group-hover:block bg-white shadow-lg rounded-[8px] border border-black/25 mt-15 w-40">
-                <a href="#" class="block px-4 py-2 pl-3 text-gray-800 rounded-[4px] hover:bg-blue-400 hover:text-white">Tag 1</a>
-                <a href="#" class="block px-4 py-2 pl-3 text-gray-800 rounded-[4px] hover:bg-blue-400 hover:text-white">Tag 2</a>
-                <a href="#" class="block px-4 py-2 pl-3 text-gray-800 rounded-[4px] hover:bg-blue-400 hover:text-white">Tag 3</a>
-            </div> */}
-
-{/* <select class="flex flex-row text-[14px] drop-shadow-lg justify-left bg-white-500 w-full h-8 rounded-[8px] text-black rounded border border-black/15 hover:bg-blue-400 focus:outline-none mt-[4px] pl-3 pt-[4px] text-opacity-[0]">
-            <option value="">Tag1</option>
-          </select> */}

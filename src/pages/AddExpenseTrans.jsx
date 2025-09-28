@@ -1,89 +1,111 @@
 import "../tailwind.css";
-import BalanceAll from "../components/BalanceAll";
 import SelectTag from "../components/Ohma/SelectTag";
-import Income from "../components/Ohma/Income";
 import Notes from "../components/Ohma/Notes";
-import InsertBtn from "../components/Ohma/InsertBtn";
-import ExpenseBtn from "../components/Ohma/ExpenseBtn";
 import Spendings from "../components/Ohma/Spendings";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from '../assets/supabaseClient';
 import { useEffect, useState } from "react";
-
 
 function AddExpenseTrans() {
     const navigate = useNavigate();
     const { id: walletId } = useParams();
     const [walletType, setWalletType] = useState('');
-    const [walletName, setWalletName] = useState(null);
+    const [walletName, setWalletName] = useState('');
     const [currentBudget, setCurrentBudget] = useState(0);
     const [dailyBudget, setDailyBudget] = useState(0);
-    const [amount, setAmount] = useState(0);
+    const [amount, setAmount] = useState('');
     const [tagId, setTagId] = useState('');
     const [note, setNote] = useState('');
     const [loading, setLoading] = useState(false);
     const [enableDailyBudget, setEnableDailyBudget] = useState(true);
 
+    console.log('Wallet ID from URL:', walletId);
+
     useEffect(() => {
         const getWalletInfo = async () => {
             try {
                 if (walletId) {
+                    console.log('Fetching wallet info for:', walletId);
+
                     const { data: wallet, error: walletError } = await supabase
                         .from('Wallet')
-                        .select('WalletName', 'WalletType', 'DailyAvaliable')
+                        .select('WalletName, WalletType, DailyAvaliable')
                         .eq('Wallet_id', walletId)
                         .single();
+
                     if (walletError) {
                         console.error('Error fetching wallet:', walletError);
+                        console.log('Wallet error details:', walletError);
+                    } else if (wallet) {
+                        console.log('Wallet data received:', wallet);
+                        setWalletType(wallet.WalletType || '');
+                        setWalletName(wallet.WalletName || '');
+                        setEnableDailyBudget(wallet.DailyAvaliable !== null);
+                    } else {
+                        console.log('No wallet data returned');
                     }
-                    else if (wallet) {
-                        setWalletType(wallet.WalletType);
-                        setWalletName(wallet.WalletName);
-                        setEnableDailyBudget(wallet.enableDailyBudget !== null);
-                    }
-                    //fetch Budget
+
                     const { data: expenseWallet, error: budgetError } = await supabase
                         .from('ExpenseWallet')
                         .select('Budget')
-                        .eq("Wallet_id", walletId)
+                        .eq('Wallet_id', walletId)
                         .single();
+
                     if (budgetError) {
                         console.error('Error fetching Budget:', budgetError);
+                        console.log('Budget error details:', budgetError);
                     } else if (expenseWallet) {
+                        console.log('Budget data received:', expenseWallet);
                         setCurrentBudget(expenseWallet.Budget || 0);
                         setDailyBudget((expenseWallet.Budget || 0) / 30);
+                    } else {
+                        console.log('No budget data returned');
                     }
+                } else {
+                    console.error('No wallet ID found in URL');
                 }
-
             } catch (error) {
-                console.error('Errpr getting wallet info')
+                console.error('Error getting wallet info:', error);
             }
         };
         getWalletInfo();
-        //v run the useEffect whenever walletID changes
     }, [walletId]);
 
     const handleClose = () => {
         if (walletId && walletType) {
-            navigate('/expense-wallet/${walletId}');
-        }
-        else {
+            navigate(`/expense-wallet/${walletId}`);
+        } else {
             navigate("/walletlist");
         }
     };
 
-    const validateExpense = async (walletId, tagId, txAmount, note) => {
+    const updateDailyBudget = async (walletId, newDailyBudget) => {
+        if (enableDailyBudget) {
+            const { error } = await supabase
+                .from('Wallet')
+                .update({ DailyAvaliable: newDailyBudget })
+                .eq('Wallet_id', walletId);
+
+            if (error) {
+                console.error('Failed to update daily budget:', error);
+            }
+        }
+    };
+
+    const validateExpense = (walletId, tagId, txAmount, note) => {
         if (!walletId) {
             throw new Error('Wallet ID is required');
         }
         if (!tagId) {
             throw new Error('Please select a tag');
         }
-        if (!txAmount || txAmount <= 0) {
-            throw new Error('Please enter a valid amount');
+
+        const amountNum = parseFloat(txAmount);
+        if (!txAmount || isNaN(amountNum) || amountNum <= 0) {
+            throw new Error('Please enter a valid amount (numbers only)');
         }
-        if (txAmount > currentBudget) {
-            throw new Error('Insufficient budget.');
+        if (amountNum > currentBudget) {
+            throw new Error(`Insufficient budget. Current: $${currentBudget}`);
         }
         return true;
     };
@@ -122,18 +144,17 @@ function AddExpenseTrans() {
         return newBudget;
     };
 
-
-
     const insertExpense = async (walletId, tagId, txAmount, note) => {
         const transactionId = crypto.randomUUID();
         const { data: txType, error: txTypeError } = await supabase
             .from("TxType")
             .select("TxType_id")
-            .eq("TxType", 'Expense')
+            .eq("TxType", "Expense")
             .single();
 
-        if (transactionError) {
-            throw new Error("Could not fetch expense type-ID, please try again later");
+        if (txTypeError) {
+            console.error('TxType error details:', txTypeError);
+            throw new Error("Could not fetch expense type-ID: " + txTypeError.message);
         }
 
         const { data: transactionData, error: transactionError } = await supabase
@@ -158,16 +179,12 @@ function AddExpenseTrans() {
     };
 
     const showNewExpense = (transactionData) => {
-        console.log('New expense added:', transactionData);
         alert(`Expense of $${amount} added successfully!`);
     }
 
     const showUpdatedBudget = (newBudget, newDailyBudget) => {
-        console.log('Updated budget:', newBudget);
-        console.log('Updated daily budget:', newDailyBudget);
-
         if (enableDailyBudget) {
-            alert('Remaining Budget: $${newBudget.toFixed(2)}\nDaily Budget: $${newDailyBudget.toFixed(2)}');
+            alert(`Remaining Budget: $${newBudget.toFixed(2)}\nDaily Budget: $${newDailyBudget.toFixed(2)}`);
         } else {
             alert(`Remaining Budget: $${newBudget.toFixed(2)}`);
         }
@@ -176,36 +193,27 @@ function AddExpenseTrans() {
     const addExpense = async (walletId, tagId, txAmount, note) => {
         setLoading(true);
         try {
-            //(Sequence)
-            // Step 1: Validate expense
             validateExpense(walletId, tagId, txAmount, note);
-
-            // Step 2: Calculate new budget
+            validateNote(note);
             const newBudget = calcBudget(currentBudget, txAmount);
-
-            // Step 3: Check budget constraints
             checkBudget(walletId, newBudget);
-
-            // Step 4: Calculate daily budget
             const newDailyBudget = calcDailyBudget(newBudget);
-
-            // Step 5: Check daily budget constraints
             checkDailyBudget(walletId, newDailyBudget);
 
-            // Step 6: Insert expense transaction
             const transactionData = await insertExpense(walletId, tagId, txAmount, note);
-
-            // Step 7: Update budget
+            if (transactionData && transactionData[0] && transactionData[0].Tx_id) {
+                // showCreateTransactionSuccess
+                alert(`Transaction ${transactionData[0].Tx_id} created successfully!`);
+            } else {
+                // showCreateTransactionError
+                throw new Error('Transaction creation failed - no transaction ID returned');
+            }
             const updatedBudget = await updateBudget(walletId, newBudget);
-
-            // Step 8: Update daily budget (if enabled)
             await updateDailyBudget(walletId, newDailyBudget);
 
-            // Update local state
             setCurrentBudget(updatedBudget);
             setDailyBudget(newDailyBudget);
 
-            // Show success message
             showNewExpense(transactionData);
             showUpdatedBudget(updatedBudget, newDailyBudget);
 
@@ -220,7 +228,29 @@ function AddExpenseTrans() {
     };
 
     const handleAddExpense = async () => {
+        if (!amount) {
+            alert('Please enter an amount');
+            return;
+        }
         await addExpense(walletId, tagId, parseFloat(amount), note);
+    };
+
+    // isNAN is to prevent NaN
+    const getButtonText = () => {
+        if (loading) {
+            return 'Processing...';
+        }
+        const displayAmount = amount && !isNaN(parseFloat(amount))
+            ? parseFloat(amount).toLocaleString()
+            : '0';
+        return `Add Expense - $${displayAmount}`;
+    };
+
+    const validateNote = (note) => {
+        if (note && (note.length < 1 || note.length > 20)) {
+            throw new Error('Note must be between 1 and 20 characters');
+        }
+        return true;
     };
 
     return (
@@ -229,7 +259,7 @@ function AddExpenseTrans() {
                 <div className="mt-30 w-[632px] h-[380px] bg-white border border-black/25 rounded-[10px] drop-shadow-lg">
                     <div className="flex justify-end border-b border-black/25 px-4 py-2 drop-shadow-lg ">
                         <button
-                            className="text-gray-500 hover:text-gray-700"
+                            className="text-gray-500 hover:text-gray-700 text-lg font-bold"
                             onClick={handleClose}
                         >
                             ✕
@@ -238,11 +268,11 @@ function AddExpenseTrans() {
 
                     {/* Wallet Info Section */}
                     <div className="ml-8 mt-3">
-                        <div className="text-[20px] font-[400]">
-                            {walletName || 'Loading...'}
+                        <div className="text-[27px] font-[400]">
+                            {walletName || 'Loading Wallet...'}
                         </div>
                         <div className="text-[14px] text-gray-600 mt-1">
-                            Type: {walletType} | Budget: ${currentBudget.toLocaleString()}
+                            Type: {walletType || 'Unknown'} | Budget: ${currentBudget.toLocaleString()}
                         </div>
                         {enableDailyBudget && (
                             <div className="text-[12px] text-blue-600 mt-1">
@@ -263,16 +293,16 @@ function AddExpenseTrans() {
                         <div className="w-140 mt-3">
                             <Notes onNoteChange={setNote} />
                         </div>
-                        <div className="mt-6 ml-118">
+                        <div className="mt-6 ml-82 flex justify-center">
                             <button
                                 onClick={handleAddExpense}
-                                disabled={loading}
-                                className={`px-6 py-2 rounded font-medium ${loading
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-red-500 hover:bg-red-600 text-white'
+                                disabled={loading || !amount}
+                                className={`px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-200 ${loading || !amount
+                                    ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                                    : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                                     }`}
                             >
-                                {loading ? 'Processing...' : `Add Expense - $${amount || '0'}`}
+                                {getButtonText()}
                             </button>
                         </div>
                     </div>
@@ -282,4 +312,4 @@ function AddExpenseTrans() {
     );
 }
 
-export default AddExpenseTrans
+export default AddExpenseTrans;
