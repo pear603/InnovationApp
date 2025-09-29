@@ -11,15 +11,31 @@ function AddExpenseTrans() {
     const { id: walletId } = useParams();
     const [walletType, setWalletType] = useState('');
     const [walletName, setWalletName] = useState('');
-    const [currentBudget, setCurrentBudget] = useState(0);
+    const [originalBudget, setOriginalBudget] = useState(0);
+    const [currentSpent, setCurrentSpent] = useState(0);
+    const [remainingBudget, setRemainingBudget] = useState(0);
+    const [daysLeft, setDaysLeft] = useState(0);
     const [dailyBudget, setDailyBudget] = useState(0);
     const [amount, setAmount] = useState('');
     const [tagId, setTagId] = useState('');
     const [note, setNote] = useState('');
     const [loading, setLoading] = useState(false);
     const [enableDailyBudget, setEnableDailyBudget] = useState(true);
+    const [startDate, setStartDate] = useState('');
 
-    console.log('Wallet ID from URL:', walletId);
+    const calculateDaysLeft = (startDateString) => {
+        if (!startDateString) return 30; // Default fallback
+
+        const start = new Date(startDateString);
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + 1);
+
+        const today = new Date();
+        const timeDiff = end.getTime() - today.getTime();
+        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+        return Math.max(0, daysLeft); // Don't go below 0
+    };
 
     useEffect(() => {
         const getWalletInfo = async () => {
@@ -27,22 +43,24 @@ function AddExpenseTrans() {
                 if (walletId) {
                     console.log('Fetching wallet info for:', walletId);
 
+
                     const { data: wallet, error: walletError } = await supabase
                         .from('Wallet')
-                        .select('WalletName, WalletType, DailyAvaliable')
+                        .select('WalletName, WalletType, DailyAvaliable, StartDate')
                         .eq('Wallet_id', walletId)
                         .single();
 
                     if (walletError) {
                         console.error('Error fetching wallet:', walletError);
-                        console.log('Wallet error details:', walletError);
                     } else if (wallet) {
                         console.log('Wallet data received:', wallet);
                         setWalletType(wallet.WalletType || '');
                         setWalletName(wallet.WalletName || '');
                         setEnableDailyBudget(wallet.DailyAvaliable !== null);
-                    } else {
-                        console.log('No wallet data returned');
+                        setStartDate(wallet.StartDate || new Date().toISOString());
+                        const daysLeft = calculateDaysLeft(wallet.StartDate);
+                        setDaysLeft(daysLeft);
+                        console.log('Days left calculated:', daysLeft, 'from StartDate:', wallet.StartDate);
                     }
 
                     const { data: expenseWallet, error: budgetError } = await supabase
@@ -53,16 +71,39 @@ function AddExpenseTrans() {
 
                     if (budgetError) {
                         console.error('Error fetching Budget:', budgetError);
-                        console.log('Budget error details:', budgetError);
                     } else if (expenseWallet) {
-                        console.log('Budget data received:', expenseWallet);
-                        setCurrentBudget(expenseWallet.Budget || 0);
-                        setDailyBudget((expenseWallet.Budget || 0) / 30);
-                    } else {
-                        console.log('No budget data returned');
+                        const originalBudget = expenseWallet.Budget || 0;
+                        setOriginalBudget(originalBudget);
+
+                        // Calculate total spent from transactions
+                        const { data: transactions, error: txError } = await supabase
+                            .from('Transaction')
+                            .select('TxAmount, TxType:TxType_id(TxType)')
+                            .eq('Wallet_id', walletId);
+
+                        if (!txError && transactions) {
+                            const totalSpent = transactions
+                                .filter(tx => tx.TxType?.TxType === 'Expense')
+                                .reduce((sum, tx) => sum + (tx.TxAmount || 0), 0);
+
+                            setCurrentSpent(totalSpent);
+                            const remaining = originalBudget - totalSpent;
+                            setRemainingBudget(remaining);
+
+                            // Calculate daily budget based on actual days left
+                            const daysLeft = calculateDaysLeft(wallet?.StartDate);
+                            const dailyBudget = daysLeft > 0 ? remaining / daysLeft : remaining;
+                            setDailyBudget(dailyBudget);
+
+                            console.log('Budget calculated:', {
+                                original: originalBudget,
+                                spent: totalSpent,
+                                remaining: remaining,
+                                daysLeft: daysLeft,
+                                daily: dailyBudget
+                            });
+                        }
                     }
-                } else {
-                    console.error('No wallet ID found in URL');
                 }
             } catch (error) {
                 console.error('Error getting wallet info:', error);
@@ -73,22 +114,18 @@ function AddExpenseTrans() {
 
     const handleClose = () => {
         if (walletId && walletType) {
-            navigate(`/expense-wallet/${walletId}`);
+            switch (walletType.toLowerCase()) {
+                case 'expense':
+                    navigate(`/expense-wallet/${walletId}`);
+                    break;
+                case 'both':
+                    navigate(`/both-wallet/${walletId}`);
+                    break;
+                default:
+                    navigate("/walletlist");
+            }
         } else {
             navigate("/walletlist");
-        }
-    };
-
-    const updateDailyBudget = async (walletId, newDailyBudget) => {
-        if (enableDailyBudget) {
-            const { error } = await supabase
-                .from('Wallet')
-                .update({ DailyAvaliable: newDailyBudget })
-                .eq('Wallet_id', walletId);
-
-            if (error) {
-                console.error('Failed to update daily budget:', error);
-            }
         }
     };
 
@@ -104,44 +141,18 @@ function AddExpenseTrans() {
         if (!txAmount || isNaN(amountNum) || amountNum <= 0) {
             throw new Error('Please enter a valid amount (numbers only)');
         }
-        if (amountNum > currentBudget) {
-            throw new Error(`Insufficient budget. Current: $${currentBudget}`);
+        if (amountNum > remainingBudget) {
+            throw new Error(`Insufficient budget. Remaining: $${remainingBudget.toFixed(2)}`);
         }
         return true;
     };
 
-    const checkBudget = (walletId, newBudget) => {
-        if (newBudget < 0) {
-            throw new Error('Budget cannot be negative');
-        }
-        return true;
+    const calcRemainingBudget = (currentRemaining, txAmount) => {
+        return currentRemaining - txAmount;
     };
 
-    const checkDailyBudget = (walletId, dailyBudget) => {
-        if (enableDailyBudget && dailyBudget < 0) {
-            throw new Error('Daily budget exceeded');
-        }
-        return true;
-    };
-
-    const calcBudget = (currentBudget, txAmount) => {
-        return currentBudget - txAmount;
-    };
-
-    const calcDailyBudget = (newBudget) => {
-        return newBudget / 30;
-    }
-
-    const updateBudget = async (walletId, newBudget) => {
-        const { error } = await supabase
-            .from('ExpenseWallet')
-            .update({ Budget: newBudget })
-            .eq('Wallet_id', walletId)
-
-        if (error) {
-            throw new Error('Failed to update budget: ' + error.message);
-        }
-        return newBudget;
+    const calcDailyBudget = (newRemainingBudget, daysLeft) => {
+        return daysLeft > 0 ? newRemainingBudget / daysLeft : newRemainingBudget;
     };
 
     const insertExpense = async (walletId, tagId, txAmount, note) => {
@@ -153,7 +164,6 @@ function AddExpenseTrans() {
             .single();
 
         if (txTypeError) {
-            console.error('TxType error details:', txTypeError);
             throw new Error("Could not fetch expense type-ID: " + txTypeError.message);
         }
 
@@ -178,44 +188,31 @@ function AddExpenseTrans() {
         return transactionData;
     };
 
-    const showNewExpense = (transactionData) => {
-        alert(`Expense of $${amount} added successfully!`);
-    }
-
-    const showUpdatedBudget = (newBudget, newDailyBudget) => {
-        if (enableDailyBudget) {
-            alert(`Remaining Budget: $${newBudget.toFixed(2)}\nDaily Budget: $${newDailyBudget.toFixed(2)}`);
-        } else {
-            alert(`Remaining Budget: $${newBudget.toFixed(2)}`);
-        }
-    };
-
     const addExpense = async (walletId, tagId, txAmount, note) => {
         setLoading(true);
         try {
             validateExpense(walletId, tagId, txAmount, note);
-            validateNote(note);
-            const newBudget = calcBudget(currentBudget, txAmount);
-            checkBudget(walletId, newBudget);
-            const newDailyBudget = calcDailyBudget(newBudget);
-            checkDailyBudget(walletId, newDailyBudget);
+
+            const newRemainingBudget = calcRemainingBudget(remainingBudget, txAmount);
+            const newDaysLeft = calculateDaysLeft(startDate);
+            const newDailyBudget = calcDailyBudget(newRemainingBudget, newDaysLeft);
 
             const transactionData = await insertExpense(walletId, tagId, txAmount, note);
             if (transactionData && transactionData[0] && transactionData[0].Tx_id) {
-                // showCreateTransactionSuccess
-                alert(`Transaction ${transactionData[0].Tx_id} created successfully!`);
+                alert(`Expense of $${amount} added successfully!`);
+
+                // Update local state
+                setRemainingBudget(newRemainingBudget);
+                setDailyBudget(newDailyBudget);
+                setDaysLeft(newDaysLeft);
+                setCurrentSpent(currentSpent + txAmount);
+
+                setTimeout(() => {
+                    handleClose();
+                }, 1000);
             } else {
-                // showCreateTransactionError
-                throw new Error('Transaction creation failed - no transaction ID returned');
+                throw new Error('Transaction creation failed');
             }
-            const updatedBudget = await updateBudget(walletId, newBudget);
-            await updateDailyBudget(walletId, newDailyBudget);
-
-            setCurrentBudget(updatedBudget);
-            setDailyBudget(newDailyBudget);
-
-            showNewExpense(transactionData);
-            showUpdatedBudget(updatedBudget, newDailyBudget);
 
             return transactionData;
         } catch (error) {
@@ -232,10 +229,13 @@ function AddExpenseTrans() {
             alert('Please enter an amount');
             return;
         }
+        if (!tagId) {
+            alert('Please select a tag');
+            return;
+        }
         await addExpense(walletId, tagId, parseFloat(amount), note);
     };
 
-    // isNAN is to prevent NaN
     const getButtonText = () => {
         if (loading) {
             return 'Processing...';
@@ -246,69 +246,61 @@ function AddExpenseTrans() {
         return `Add Expense - $${displayAmount}`;
     };
 
-    const validateNote = (note) => {
-        if (note && (note.length < 1 || note.length > 20)) {
-            throw new Error('Note must be between 1 and 20 characters');
-        }
-        return true;
-    };
-
     return (
-        <>
-            <div className="w-screen h-screen flex flex-row items-start justify-center bg-[#E2EFF3]">
-                <div className="mt-30 w-[632px] h-[380px] bg-white border border-black/25 rounded-[10px] drop-shadow-lg">
-                    <div className="flex justify-end border-b border-black/25 px-4 py-2 drop-shadow-lg ">
+        <div className="w-screen h-screen flex flex-row items-start justify-center bg-[#E2EFF3]">
+            <div className="mt-30 w-[632px] h-[420px] bg-white border border-black/25 rounded-[10px] drop-shadow-lg">
+                <div className="flex justify-end border-b border-black/25 px-4 py-2">
+                    <button
+                        className="text-gray-500 hover:text-gray-700 text-lg font-bold"
+                        onClick={handleClose}
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                {/* Wallet Info Section */}
+                <div className="ml-8 mt-3">
+                    <div className="text-[27px] font-[400]">
+                        {walletName || 'Loading Wallet...'}
+                    </div>
+                    <div className="text-[14px] text-gray-600 mt-1">
+                        Original Budget: ${originalBudget.toLocaleString()}
+                    </div>
+                    <div className="text-[14px] text-green-600 mt-1">
+                        Remaining: ${remainingBudget.toFixed(2)} | Spent: ${currentSpent.toFixed(2)}
+                    </div>
+                    <div className="text-[12px] text-blue-600 mt-1">
+                        Daily: ${dailyBudget.toFixed(2)} | Days Left: {daysLeft}
+                    </div>
+                </div>
+
+                <div className="flex flex-col ml-8 mt-3 text-[15px]">
+                    <div className="grid grid-cols-6 gap-1">
+                        <div className="col-span-2">
+                            <SelectTag onTagSelect={setTagId} />
+                        </div>
+                        <div className="col-span-4 w-90">
+                            <Spendings onAmountChange={setAmount} />
+                        </div>
+                    </div>
+                    <div className="w-140 mt-3">
+                        <Notes onNoteChange={setNote} />
+                    </div>
+                    <div className="mt-6 ml-82 flex justify-center">
                         <button
-                            className="text-gray-500 hover:text-gray-700 text-lg font-bold"
-                            onClick={handleClose}
+                            onClick={handleAddExpense}
+                            disabled={loading || !amount || !tagId}
+                            className={`px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-200 ${loading || !amount || !tagId
+                                ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                                : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                                }`}
                         >
-                            ✕
+                            {getButtonText()}
                         </button>
-                    </div>
-
-                    {/* Wallet Info Section */}
-                    <div className="ml-8 mt-3">
-                        <div className="text-[27px] font-[400]">
-                            {walletName || 'Loading Wallet...'}
-                        </div>
-                        <div className="text-[14px] text-gray-600 mt-1">
-                            Type: {walletType || 'Unknown'} | Budget: ${currentBudget.toLocaleString()}
-                        </div>
-                        {enableDailyBudget && (
-                            <div className="text-[12px] text-blue-600 mt-1">
-                                Daily Budget: ${dailyBudget.toFixed(2)}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex flex-col ml-8 mt-3 text-[15px]">
-                        <div className="grid grid-cols-6 gap-1">
-                            <div className="col-span-2">
-                                <SelectTag onTagSelect={setTagId} />
-                            </div>
-                            <div className="col-span-4 w-90">
-                                <Spendings onAmountChange={setAmount} />
-                            </div>
-                        </div>
-                        <div className="w-140 mt-3">
-                            <Notes onNoteChange={setNote} />
-                        </div>
-                        <div className="mt-6 ml-82 flex justify-center">
-                            <button
-                                onClick={handleAddExpense}
-                                disabled={loading || !amount}
-                                className={`px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-200 ${loading || !amount
-                                    ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                                    : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-                                    }`}
-                            >
-                                {getButtonText()}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
