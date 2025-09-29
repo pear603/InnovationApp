@@ -1,125 +1,88 @@
 import { useNavigate, useParams } from "react-router-dom";
-import GoodToKnow from "../components/Ohma/GoodToKnow";
-import SelectTag from "../components/Ohma/SelectTag";
-import SuggestionBox from "../components/Ohma/SuggestionBox";
-import Spendings from "../components/Ohma/Spendings";
-import Notes from "../components/Ohma/Notes";
+import { useEffect, useState } from "react";
+import { supabase } from '../assets/supabaseClient';
 import Insert from "../components/Ohma/Insert";
 import PieStats from "../components/Ohma/PieStats";
 import BarGraph from "../components/Ohma/BarGraph";
-import "../tailwind.css";
+import GoodToKnow from "../components/Ohma/GoodToKnow";
+import SuggestionBox from "../components/Ohma/SuggestionBox";
 import Transaction from "../components/Ohma/Transaction";
-import { useEffect, useState } from "react";
-import { supabase } from '../assets/supabaseClient';
 import Pagination from "../components/Ohma/Pagination";
-
+import "../tailwind.css";
 
 function IncomeWalletDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
+
   const [transactions, setTransactions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [walletName, setWalletName] = useState('');
   const [monthlyGoal, setMonthlyGoal] = useState(0);
   const [currentSaved, setCurrentSaved] = useState(0);
   const [daysLeft, setDaysLeft] = useState(0);
   const [dailyGoal, setDailyGoal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const TRANSACTIONS_PER_PAGE = 10;
-
-  // Calculate remaining amount to reach goal
   const remainingToGoal = monthlyGoal - currentSaved;
+  const currentBalance = currentSaved; // For income wallet, balance = current saved
 
   const calculateDaysLeft = (startDate) => {
     const end = new Date(startDate);
     end.setMonth(end.getMonth() + 1);
-    const today = new Date();
-    const daysLeft = Math.ceil((end - today) / (1000 * 3600 * 24));
-    return Math.max(0, daysLeft);
-  };
-
-  // Fetch total saved from ALL income transactions
-  const fetchTotalSaved = async (walletId) => {
-    const { data: allTransactions, error } = await supabase
-      .from('Transaction')
-      .select('TxAmount, TxType_id')
-      .eq('Wallet_id', walletId);
-
-    if (allTransactions && !error) {
-      // Get income type ID
-      const { data: incomeType } = await supabase
-        .from('TxType')
-        .select('TxType_id')
-        .eq('TxType', 'Income')
-        .single();
-
-      if (incomeType) {
-        const totalSaved = allTransactions
-          .filter(tx => tx.TxType_id === incomeType.TxType_id)
-          .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
-
-        setCurrentSaved(totalSaved);
-      }
-    }
+    return Math.max(0, Math.ceil((end - new Date()) / (1000 * 3600 * 24)));
   };
 
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
-
       setLoading(true);
+
       try {
-        // Get wallet info
-        const { data: wallet, error: walletError } = await supabase
+        // Wallet info
+        const { data: wallet } = await supabase
           .from('Wallet')
-          .select('WalletName, StartDate, DailyAvaliable')
+          .select('WalletName, StartDate')
           .eq('Wallet_id', id)
           .single();
 
-        console.log('Wallet data:', wallet);
-        console.log('Wallet error:', walletError);
+        setWalletName(wallet?.WalletName || 'Wallet Not Found');
+        const days = wallet ? calculateDaysLeft(wallet.StartDate) : 0;
+        setDaysLeft(days);
 
-        if (walletError) {
-          console.error('Error fetching wallet:', walletError);
-          setWalletName('Wallet Not Found');
-        } else if (wallet) {
-          setWalletName(wallet.WalletName || 'Unnamed Wallet');
-          const days = calculateDaysLeft(wallet.StartDate);
-          setDaysLeft(days);
-
-          // Calculate daily goal based on remaining goal and days left
-          const dailyGoal = days > 0 ? (monthlyGoal - currentSaved) / days : 0;
-          setDailyGoal(dailyGoal);
-        } else {
-          setWalletName('Wallet Not Found');
-        }
-
-        // Get monthly goal from IncomeWallet
-        const { data: incomeWallet, error: budgetError } = await supabase
+        // Monthly goal
+        const { data: incomeWallet } = await supabase
           .from('IncomeWallet')
           .select('Goal')
           .eq('Wallet_id', id)
           .single();
+        setMonthlyGoal(incomeWallet?.Goal || 0);
 
-        console.log('IncomeWallet data:', incomeWallet);
-        console.log('Goal error:', budgetError);
+        // Transactions (all, to calculate total saved)
+        const { data: allTx } = await supabase
+          .from('Transaction')
+          .select('TxAmount, TxType_id')
+          .eq('Wallet_id', id);
 
-        if (incomeWallet) {
-          setMonthlyGoal(incomeWallet.Goal || 0);
-        } else {
-          setMonthlyGoal(0);
+        const { data: incomeType } = await supabase
+          .from('TxType')
+          .select('TxType_id')
+          .eq('TxType', 'Income')
+          .single();
+
+        if (incomeType && allTx) {
+          const total = allTx
+            .filter(tx => tx.TxType_id === incomeType.TxType_id)
+            .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
+          setCurrentSaved(total);
         }
 
-        // Fetch total saved
-        await fetchTotalSaved(id);
-
-        // Get paginated transactions
+        // Paginated transactions
         const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
         const to = from + TRANSACTIONS_PER_PAGE - 1;
 
-        const { data: transactions, error, count } = await supabase
+        const { data: pageTx, count } = await supabase
           .from('Transaction')
           .select(`
             *,
@@ -130,19 +93,13 @@ function IncomeWalletDetails() {
           .order('CreatedDate', { ascending: false })
           .range(from, to);
 
-        console.log('Paginated transactions:', transactions);
-        console.log('Transaction error:', error);
+        setTransactions(pageTx || []);
+        if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
-        if (!error) {
-          setTransactions(transactions || []);
+        // Daily goal (after currentSaved fetched)
+        setDailyGoal(days > 0 ? (monthlyGoal - currentSaved) / days : 0);
 
-          if (count) {
-            setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
-          }
-        }
-
-      } catch (error) {
-        console.error('Error fetching data:', error);
+      } catch (err) {
         setWalletName('Error Loading Wallet');
       } finally {
         setLoading(false);
@@ -150,61 +107,30 @@ function IncomeWalletDetails() {
     };
 
     fetchData();
-  }, [id, currentPage]);
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
-  const handleIncomeClick = () => {
-    if (id) {
-      navigate(`/IncomeTx/${id}`);
-    } else {
-      console.error('No wallet ID found');
-      alert('Wallet ID not found. Please try again.');
-    }
-  };
+  }, [id, currentPage, monthlyGoal, currentSaved]);
 
   return (
-    <div className="w-screen h-screen flex flex-row items-start justify-center bg-[#E2EFF3]">
-      <div className="mt-5 ml-[76px] flex flex-col items-start space-y-2">
-        <h1 className="text-[40px] font-bold">
-          {walletName || 'Loading Wallet...'}
-        </h1>
+    <div className="w-screen h-screen flex flex-row justify-center bg-[#E2EFF3]">
+      <div className="mt-5 ml-[76px] flex flex-col space-y-2">
+        <h1 className="text-[40px] font-bold">{walletName || 'Loading...'}</h1>
 
-        {/* Savings Overview */}
-        <div className="w-[739px] bg-white rounded-[10px] p-6 shadow-lg">
-          <div className="text-[28px] font-bold mb-4">Savings Overview</div>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <BudgetItem label="Monthly Goal" value={`$${monthlyGoal.toLocaleString()}`} />
-              <BudgetItem label="Currently Saved" value={`$${currentSaved.toFixed(2)}`} className="text-green-600" />
-              <BudgetItem label="Remaining to Goal" value={`$${remainingToGoal.toFixed(2)}`} className="text-blue-600" />
-            </div>
-            <div className="space-y-2">
-              <BudgetItem
-                label="Days Left"
-                value={`${daysLeft} days`}
-                className={daysLeft <= 3 ? 'text-red-600' : 'text-blue-600'}
-              />
-              <BudgetItem label="Daily Goal" value={`$${dailyGoal.toFixed(2)}`} className="text-purple-600" />
-              <BudgetItem
-                label="Progress"
-                value={`${monthlyGoal > 0 ? ((currentSaved / monthlyGoal) * 100).toFixed(1) : 0}%`}
-              />
-            </div>
-          </div>
+        {/* Overview */}
+        <Overview
+          monthlyGoal={monthlyGoal}
+          currentSaved={currentSaved}
+          remainingToGoal={remainingToGoal}
+          daysLeft={daysLeft}
+          dailyGoal={dailyGoal}
+          currentBalance={currentBalance}
+        />
+
+        {/* Add Income */}
+        <div className="h-[55px] mt-3 mb-5">
+          <Insert onClick={() => navigate(`/IncomeTx/${id}`)} />
         </div>
 
-        {/* Add Income Button */}
-        <div className="w-full max-w-[739px]">
-          <Insert onClick={handleIncomeClick} />
-        </div>
-
-        {/* Statistics */}
-        <div className="bg-white w-[741px] border border-black/25 rounded-[10px] p-6">
+        {/* Stats */}
+        <div className="bg-white w-[741px] rounded-[10px] p-6 shadow-lg">
           <div className="text-[24px] mb-4">Statistics</div>
           <div className="grid grid-cols-2 gap-5">
             <PieStats walletId={id} />
@@ -213,45 +139,56 @@ function IncomeWalletDetails() {
               <GoodToKnow walletId={id} />
             </div>
           </div>
-          <div className="mt-6">
-            <BarGraph walletId={id} />
-          </div>
+          <div className="mt-6"><BarGraph walletId={id} /></div>
         </div>
       </div>
 
-      {/* Transaction Section */}
-      <div className="w-[523px] bg-white mt-14 ml-3 border border-black/25 rounded-[10px] p-6">
+      {/* Fixed Transaction Area */}
+      <div className="w-[523px] h-[800px] bg-white mt-14 ml-3 rounded-[10px] p-6">
         <div className="text-[29px] font-bold mb-4">Transaction History</div>
-
-        {loading && <div className="text-center text-gray-500 py-4">Loading transactions...</div>}
-
-        <div className="max-h-[750px] overflow-y-auto">
-          {transactions.length === 0 && !loading ? (
-            <div className="text-center text-gray-500 py-4">No transactions found</div>
-          ) : (
-            transactions.map((transaction, index) => (
-              <Transaction
-                key={transaction.Tx_id}
-                transaction={transaction}
-                index={index}
-              />
-            ))
-          )}
+        {loading && <p className="text-center text-gray-500">Loading...</p>}
+        <div className="max-h-[600px] overflow-y-auto">
+          {(!loading && transactions.length === 0)
+            ? <p className="text-center text-gray-500">No transactions found</p>
+            : transactions.map(tx => <Transaction key={tx.Tx_id} transaction={tx} />)}
         </div>
-
         {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         )}
       </div>
     </div>
   );
 }
 
-// Helper component for budget items
+function Overview({ monthlyGoal, currentSaved, remainingToGoal, daysLeft, dailyGoal, currentBalance }) {
+  return (
+    <div className="w-[739px] bg-white rounded-[10px] p-6 shadow-lg">
+      <div className="text-[28px] font-bold mb-4">Savings Overview</div>
+      <div className="grid grid-cols-2 gap-6 mb-6">
+        <div>
+          <BudgetItem label="Monthly Goal" value={`$${monthlyGoal.toLocaleString()}`} />
+          <BudgetItem label="Currently Saved" value={`$${currentSaved.toFixed(2)}`} className="text-green-600" />
+          <BudgetItem label="Remaining to Goal" value={`$${remainingToGoal.toFixed(2)}`} className="text-blue-600" />
+        </div>
+        <div>
+          <BudgetItem label="Days Left" value={`${daysLeft} days`} className={daysLeft <= 3 ? 'text-red-600' : 'text-blue-600'} />
+          <BudgetItem label="Daily Goal" value={`$${dailyGoal.toFixed(2)}`} className="text-purple-600" />
+          <BudgetItem label="Progress" value={`${monthlyGoal > 0 ? ((currentSaved / monthlyGoal) * 100).toFixed(1) : 0}%`} />
+        </div>
+      </div>
+      <div className="border-t pt-4">
+        <div className="flex justify-between items-center">
+          <span className="text-[22px] font-bold text-gray-800">Current Balance:</span>
+          <span className="text-[28px] font-bold text-green-600">
+            ${currentBalance.toFixed(2)}
+          </span>
+        </div>
+        <div className="text-sm text-gray-600 mt-1">Days Left: {daysLeft} days</div>
+      </div>
+    </div>
+  );
+}
+
 function BudgetItem({ label, value, className = "" }) {
   return (
     <div className="flex justify-between">
