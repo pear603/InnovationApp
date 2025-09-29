@@ -74,17 +74,17 @@ function App() {
             path="/addTag"
             element={session ? <AddTag /> : <Navigate to="/login" replace />}
           />
-          <Route
-            path="/addIncomeTx"
+          {/* <Route
+            path="/addIncomeTx/:id"
             element={session ? <AddIncomeTrans /> : <Navigate to="/login" replace />} // for testing
-          />
+          /> */}
 
-           <Route
-            path="/ExpenseTx"
+          <Route
+            path="/ExpenseTx/:id"
             element={session ? <AddExpenseTrans /> : <Navigate to="/login" replace />}
           />
           <Route
-            path="/IncomeTx"
+            path="/IncomeTx/:id"
             element={session ? <AddIncomeTrans /> : <Navigate to="/login" replace />}
           />
 
@@ -105,8 +105,8 @@ function App() {
             path="/both-wallet/:id"
             element={session ? <BothWalletDetails /> : <Navigate to="/login" replace />}
           />
-          
-          
+
+
           <Route path="*" element={<Navigate to={session ? "/" : "/login"} replace />} />
         </Routes>
       </main>
