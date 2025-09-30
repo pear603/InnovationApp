@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from '../assets/supabaseClient';
-import Expense from "../components/Ohma/Expense";
+import ExpenseBtn from "../components/ExpenseBtn";
 import Transaction from "../components/Ohma/Transaction";
 import Pagination from "../components/Ohma/Pagination";
 import PieStats from "../components/Ohma/PieStats";
@@ -9,6 +9,8 @@ import BarGraph from "../components/Ohma/BarGraph";
 import GoodToKnow from "../components/Ohma/GoodToKnow";
 import SuggestionBox from "../components/Ohma/SuggestionBox";
 import "../tailwind.css";
+import BalanceLeftIncome from "../components/BalanceLeftIncome";
+import BalanceLeft from "../components/BalanceLeft";
 
 function ExpenseWalletDetails() {
   const navigate = useNavigate();
@@ -25,8 +27,8 @@ function ExpenseWalletDetails() {
   const [totalPages, setTotalPages] = useState(1);
 
   const TRANSACTIONS_PER_PAGE = 10;
-  const remainingBudget = monthlyBudget - totalSpent;
-  const currentBalance = totalSpent; // For expense wallet, balance = total spent
+  const remainingBudget = (monthlyBudget - totalSpent)/daysLeft;
+  const currentBalance = monthlyBudget - totalSpent; // For expense wallet, balance = total spent
 
   const calculateDaysLeft = (startDate) => {
     const end = new Date(startDate);
@@ -110,22 +112,34 @@ function ExpenseWalletDetails() {
   }, [id, currentPage, monthlyBudget, totalSpent]);
 
   return (
-    <div className="w-screen h-screen flex flex-row justify-center bg-[#E2EFF3]">
-      <div className="mt-5 ml-[76px] flex flex-col space-y-2">
-        <h1 className="text-[40px] font-bold">{walletName || 'Loading...'}</h1>
+    <div className="w-screen h-screen flex justify-center bg-[#E2EFF3]">
+      <div className="  flex flex-col bg-transparent gap-[16px]"> {/*group all*/}
+        <h1 className="text-[32px] mt-3">{walletName || "Loading..."}</h1>
+        <div className="gap-[16px] flex flex-row "> {/*group left right area*/}
+          <div className="gap-[16px] flex flex-col"> {/*group left*/}
 
         {/* Overview */}
-        <Overview
+        {/* <Overview
           monthlyBudget={monthlyBudget}
           totalSpent={totalSpent}
           remainingBudget={remainingBudget}
           daysLeft={daysLeft}
           dailyLimit={dailyLimit}
           currentBalance={currentBalance}
-        />
+        /> */}
+
+        <div className="gap-[10px] flex flex-col"> {/*group balance and buttons*/}
+              <div className="w-[739px] h-[197px] ">
+                <BalanceLeft
+                  balance={currentBalance}
+                  day={daysLeft}
+                  daily={remainingBudget}
+                />
+              </div>
 
         <div className="h-[55px] mt-3 mb-5">
-          <Expense onClick={() => navigate(`/ExpenseTx/${id}`)} />
+          <ExpenseBtn onClick={() => navigate(`/ExpenseTx/${id}`)} />
+        </div>
         </div>
 
         {/* Stats */}
@@ -141,12 +155,13 @@ function ExpenseWalletDetails() {
           <div className="mt-6"><BarGraph walletId={id} /></div>
         </div>
       </div>
+      
 
       {/* Fixed Transaction Area */}
-      <div className="w-[523px] h-[800px] bg-white mt-14 ml-3 rounded-[10px] p-6">
-        <div className="text-[29px] font-bold mb-4">Transaction History</div>
+      <div className="w-[523px] h-[962px] bg-white border border-black/25 rounded-[10px]">
+        <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">Transaction History</div>
         {loading && <p className="text-center text-gray-500">Loading...</p>}
-        <div className="max-h-[600px] overflow-y-auto">
+        <div className="m-10">
           {(!loading && transactions.length === 0)
             ? <p className="text-center text-gray-500">No transactions found</p>
             : transactions.map(tx => (
@@ -163,8 +178,12 @@ function ExpenseWalletDetails() {
         )}
       </div>
     </div>
+    </div>
+    </div>
+    
   );
 }
+
 
 function Overview({ monthlyBudget, totalSpent, remainingBudget, daysLeft, dailyLimit, currentBalance }) {
   return (

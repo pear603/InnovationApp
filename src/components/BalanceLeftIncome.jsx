@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../assets/supabaseClient";
 import { useParams } from "react-router-dom";
 
-function BalanceLeft({day,balance,daily}) {
+function BalanceLeftIncome({day,balance,daily}) {
   const { id } = useParams(); 
   const [dailyAvaliable, setDailyAvaliable] = useState(null);
   const [walletIcon, setWalletIcon] = useState(null);
@@ -54,4 +54,4 @@ function BalanceLeft({day,balance,daily}) {
   );
 }
 
-export default BalanceLeft;
+export default BalanceLeftIncome;

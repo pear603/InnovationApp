@@ -91,7 +91,7 @@ function App() {
 
           <Route
             path="/walletDetails"
-            element={session ? <IncomeWalletDetails /> : <Navigate to="/login" replace />} // for testing
+            element={session ? <BothWalletDetails /> : <Navigate to="/login" replace />} // for testing
           />
           <Route
             path="/expense-wallet/:id"
