@@ -114,8 +114,8 @@ function IncomeWalletDetails() {
   }, [id, currentPage, monthlyGoal, currentSaved]);
 
   return (
-    <div className="w-screen h-screen flex justify-center bg-[#E2EFF3]">
-      <div className="  flex flex-col bg-transparent gap-[16px]"> {/*group all*/}
+    <div className="w-full h-full flex flex-row items-start justify-center bg-[#E2EFF3]">
+      <div className="  flex flex-col bg-transparent gap-4" > {/*group all*/}
         <h1 className="text-[32px] mt-3">{walletName || "Loading..."}</h1>
         <div className="gap-[16px] flex flex-row"> {/*group left right area*/}
           <div className="gap-[16px] flex flex-col"> {/*group left*/}
@@ -147,16 +147,20 @@ function IncomeWalletDetails() {
             </div>
 
             {/* Stats */}
-            <div className="bg-white w-[741px] rounded-[10px] p-6 shadow-lg">
-              <div className="text-[24px] mb-4">Statistics</div>
-              <div className="grid grid-cols-2 gap-5">
-                <PieStats walletId={id} />
-                <div className="flex flex-col gap-5">
-                  <SuggestionBox walletId={id} />
+              <div className="flex flex-col bg-white w-[741px] h-[691px] border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
+              <div  className=" text-[24px] font-normal">Statistics</div>
+              <div className="flex flex-cols-2 w-fit h-[291px] justify-items-center ">
+                <div className="flex gap-5" > 
+                 <div className="w-[319px] h-[291px]">
+                    <PieStats/>
+                </div>
+                <div className="w-[331px] h-[291px] flex flex-col gap-4">
                   <GoodToKnow walletId={id} />
+                  <SuggestionBox walletId={id} />
                 </div>
               </div>
-              <div className="mt-6">
+              </div>
+               <div className="w-[635px] h-[230px] justify-items-center">
                 <BarGraph walletId={id} />
               </div>
             </div>

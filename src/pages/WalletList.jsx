@@ -48,15 +48,15 @@ const WalletList = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen bg-[#E2EFF3] flex justify-center items-center">
-      <div className="w-full h-full flex flex-col">
-        <p className="text-[32px] ml-12 mt-6">Wallets</p>
+    <div className="relative w-full h-screen bg-[#E2EFF3] flex justify-center items-center pt-8">
+      <div className="w-full h-full flex flex-col gap-4">
+        <p className="text-[32px] mx-20">Wallets</p>
 
         {fetchError ? (
           <p className="text-center mt-4">{fetchError}</p>
         ) : wallets && wallets.length > 0 ? (
-          <div className="flex justify-center items-center text-center w-full h-full">
-            <div className="text-[#969393] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+          <div className="flex  items-top text-center  h-full mx-20">
+            <div className="text-[#969393] grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-col-6 gap-x-12 ">
               {wallets.map((wallet) => (
                 <Link key={wallet.id} to={getWalletLink(wallet)}>
                   <Wallet

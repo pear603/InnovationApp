@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../assets/supabaseClient";
 import { useParams } from "react-router-dom";
 
-function BalanceLeft({day,balance,daily}) {
+function BalanceLeft({day,balance,daily, variant, goal}) {
   const { id } = useParams(); 
   const [dailyAvaliable, setDailyAvaliable] = useState(null);
   const [walletIcon, setWalletIcon] = useState(null);
@@ -47,6 +47,11 @@ function BalanceLeft({day,balance,daily}) {
             <p className="text-base sm:text-lg md:text-xl text-[#5C5C5C]">
               Daily balance {daily} ฿
             </p>
+            {variant === "Both" && (
+              <p className="text-base sm:text-lg md:text-xl text-[#5C5C5C]">
+                Daily Goal {goal} ฿
+              </p>
+            )}
           </>
         )}
       </div>

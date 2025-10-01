@@ -136,14 +136,11 @@ function BothWalletDetails() {
   }, [id, currentPage]);
 
   return (
-    <div className="w-screen h-screen flex justify-center bg-[#E2EFF3]">
-      <div className="  flex flex-col bg-transparent gap-[16px]">
-        {/*group all*/}
+    <div  className="w-full h-full flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
+      <div className="flex flex-col bg-transparent gap-4 mx-20 "> {/*group all*/}
         <h1 className="text-[32px] mt-3">{walletName || "Loading..."}</h1>
-        <div className="gap-[16px] flex flex-row ">
-          {/*group left right area*/}
-          <div className="gap-[16px] flex flex-col">
-            {/*group left*/}
+        <div className="gap-4 flex flex-row"> {/*group left right area*/}
+          <div className="gap-[16px] flex flex-col"> {/*group left*/}
             {/* Overview */}
             {/* <div className="w-[739px] bg-white rounded-[10px] p-6 shadow-lg">
           <div className="text-[28px] font-bold mb-4">Wallet Overview</div>
@@ -176,7 +173,7 @@ function BothWalletDetails() {
         </div> */}
             <div className="gap-[10px] flex flex-col">
               <div className="w-[739px] h-[197px] ">
-                <BalanceLeft balance={currentBalance} day={daysLeft} />
+                <BalanceLeft balance={currentBalance} day={daysLeft} daily ={dailyBudget} variant="Both" goal={dailyGoal}/>
               </div>
 
               {/* Action Buttons */}
@@ -189,16 +186,20 @@ function BothWalletDetails() {
             </div>
 
             {/* Stats */}
-            <div className="bg-white w-[741px] rounded-[10px] p-6 shadow-lg">
-              <div className="text-[24px] mb-4">Statistics</div>
-              <div className="grid grid-cols-2 gap-5">
-                <PieStats walletId={id} />
-                <div className="flex flex-col gap-5">
-                  <SuggestionBox walletId={id} />
+  <div className="flex flex-col bg-white w-[741px] h-[691px] border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
+              <div  className=" text-[24px] font-normal">Statistics</div>
+              <div className="flex flex-cols-2 w-fit h-[291px] justify-items-center ">
+                <div className="flex gap-5" > 
+                 <div className="w-[319px] h-[291px]">
+                    <PieStats/>
+                </div>
+                <div className="w-[331px] h-[291px] flex flex-col gap-4">
                   <GoodToKnow walletId={id} />
+                  <SuggestionBox walletId={id} />
                 </div>
               </div>
-              <div className="mt-6">
+              </div>
+               <div className="w-[635px] h-[230px] justify-items-center">
                 <BarGraph walletId={id} />
               </div>
             </div>

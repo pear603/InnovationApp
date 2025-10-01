@@ -7,7 +7,7 @@ function Nav() {
   };
   return (
     <>
-      <nav className="bg-[#59A5B2] h-[48px] py-[10px] px-[76px]">
+      <nav className="bg-[#59A5B2] w-full h-[48px] py-3 px-20">
         <div className="flex item-center justify-between ">
           <div className="text-white text-base font-bold ">
             <Link to="/walletlist">Monly</Link>
