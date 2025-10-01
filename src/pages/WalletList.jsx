@@ -48,7 +48,7 @@ const WalletList = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#E2EFF3] flex justify-center items-center pt-8">
+    <div className="relative w-full min-h-screen h-full bg-[#E2EFF3] flex justify-center pt-8">
       <div className="w-full h-full flex flex-col gap-4">
         <p className="text-[32px] mx-20">Wallets</p>
 

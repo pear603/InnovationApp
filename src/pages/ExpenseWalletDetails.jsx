@@ -27,7 +27,7 @@ function ExpenseWalletDetails() {
   const [totalPages, setTotalPages] = useState(1);
 
   const TRANSACTIONS_PER_PAGE = 10;
-  const remainingBudget = (monthlyBudget - totalSpent) / daysLeft;
+  const remainingBudget = (monthlyBudget - totalSpent);
   const currentBalance = monthlyBudget - totalSpent; // For expense wallet, balance = total spent
 
   const calculateDaysLeft = (startDate) => {
@@ -102,7 +102,7 @@ function ExpenseWalletDetails() {
         if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
         // Daily limit
-        setDailyLimit(days > 0 ? (monthlyBudget - totalSpent) / days : 0);
+        setDailyLimit(days > 0 ? Math.floor((monthlyBudget - totalSpent) / days) : 0);
       } catch {
         setWalletName("Error Loading Wallet");
       } finally {
@@ -140,7 +140,9 @@ function ExpenseWalletDetails() {
                 <BalanceLeft
                   balance={currentBalance}
                   day={daysLeft}
-                  daily={remainingBudget}
+                  daily={dailyLimit}
+                  variant={"Expenxe"}
+                  budget = {monthlyBudget}
                 />
               </div>
 
@@ -159,7 +161,7 @@ function ExpenseWalletDetails() {
                 </div>
 
                 <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
-                  <GoodToKnow walletId={id} />
+                  <GoodToKnow totalspent={totalSpent} remainbudget={remainingBudget} variant="Expense" />
                   <SuggestionBox walletId={id} />
                 </div>
               </div>

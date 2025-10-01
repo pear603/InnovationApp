@@ -267,10 +267,10 @@ function AddExpenseTrans() {
                         Original Budget: ${originalBudget.toLocaleString()}
                     </div>
                     <div className="text-[14px] text-green-600 mt-1">
-                        Remaining: ${remainingBudget.toFixed(2)} | Spent: ${currentSpent.toFixed(2)}
+                        Remaining: ${remainingBudget} | Spent: ${currentSpent}
                     </div>
                     <div className="text-[12px] text-blue-600 mt-1">
-                        Daily: ${dailyBudget.toFixed(2)} | Days Left: {daysLeft}
+                        Daily: ${dailyBudget} | Days Left: {daysLeft}
                     </div>
                 </div>
 

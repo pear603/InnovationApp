@@ -19,7 +19,7 @@ function BothWalletDetails() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [walletName, setWalletName] = useState("");
-  const [originalBudget, setOriginalBudget] = useState(0);
+  const [monthlyBudget, setmonthlyBudget] = useState(0);
   const [currentSpent, setCurrentSpent] = useState(0);
   const [currentSaved, setCurrentSaved] = useState(0);
   const [daysLeft, setDaysLeft] = useState(0);
@@ -27,11 +27,11 @@ function BothWalletDetails() {
   const [loading, setLoading] = useState(false);
 
   const TRANSACTIONS_PER_PAGE = 10;
-  const remainingBudget = originalBudget - currentSpent;
+  const remainingBudget = monthlyBudget - currentSpent;
   const remainingToGoal = monthlyGoal - currentSaved;
-  const currentBalance = originalBudget - currentSpent + currentSaved;
-  const dailyBudget = daysLeft > 0 ? remainingBudget / daysLeft : 0;
-  const dailyGoal = daysLeft > 0 ? remainingToGoal / daysLeft : 0;
+  const currentBalance = monthlyBudget - currentSpent + currentSaved;
+  const dailyBudget = daysLeft > 0 ? Math.floor(remainingBudget / daysLeft) : 0;
+  const dailyGoal = daysLeft > 0 ? Math.floor(remainingToGoal / daysLeft) : 0;
 
   const calculateDaysLeft = (startDate) => {
     const end = new Date(startDate);
@@ -64,7 +64,7 @@ function BothWalletDetails() {
             .eq("Wallet_id", id)
             .single();
 
-          setOriginalBudget(bothWallet?.Budget || 0);
+          setmonthlyBudget(bothWallet?.Budget || 0);
           setMonthlyGoal(bothWallet?.Goal || 0);
           if (error) {
             console.error("Error fetching data:", error);
@@ -135,12 +135,20 @@ function BothWalletDetails() {
     fetchData();
   }, [id, currentPage]);
 
+  
+
   return (
-    <div  className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
-      <div className="flex flex-col bg-transparent gap-4 mx-20 max-w-[1280px] w-full"> {/*group all*/}
+    <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
+      <div className="flex flex-col bg-transparent gap-4 mx-20 max-w-[1280px] w-full">
+        {" "}
+        {/*group all*/}
         <h1 className="text-[32px] mt-3">{walletName || "Loading..."}</h1>
-        <div className="flex flex-col 2xl:flex-row gap-4 "> {/*group left right area*/}
-          <div className="gap-4 flex flex-col flex-1">{/*group left*/}
+        <div className="flex flex-col 2xl:flex-row gap-4 ">
+          {" "}
+          {/*group left right area*/}
+          <div className="gap-4 flex flex-col flex-1">
+            {/*group left*/}
+
             {/* Overview */}
             {/* <div className="w-[739px] bg-white rounded-[10px] p-6 shadow-lg">
           <div className="text-[28px] font-bold mb-4">Wallet Overview</div>
@@ -173,7 +181,15 @@ function BothWalletDetails() {
         </div> */}
             <div className="gap-[10px] flex flex-col ">
               <div className="w-full min-w-[739px] h-[197px] ">
-                <BalanceLeft balance={currentBalance} day={daysLeft} daily ={dailyBudget} variant="Both" goal={dailyGoal}/>
+                <BalanceLeft
+                  balance={currentBalance}
+                  day={daysLeft}
+                  dailygoal={dailyGoal}
+                  dailybudget = {dailyBudget}
+                  variant="Both"
+                  goal={monthlyGoal}
+                  budget={monthlyBudget}
+                />
               </div>
 
               {/* Action Buttons */}
@@ -186,50 +202,53 @@ function BothWalletDetails() {
             </div>
 
             {/* Stats */}
-  <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
-              <div  className=" text-[24px] font-normal">Statistics</div>
+            <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
+              <div className=" text-[24px] font-normal">Statistics</div>
 
-                 <div className="flex flex-col sm:flex-row md:flex-row gap-5" >
-                 <div className="w-full md:w-1/2 h-[291px]">
-                    <PieStats/>
+              <div className="flex flex-col sm:flex-row md:flex-row gap-5">
+                <div className="w-full md:w-1/2 h-[291px]">
+                  <PieStats />
                 </div>
 
                 <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
-                  <GoodToKnow walletId={id} />
+                  <GoodToKnow totalspent ={currentSpent} remainbudget={remainingBudget} totalsave= {currentSaved} remaingoal={remainingToGoal} variant="Both"/>
                   <SuggestionBox walletId={id} />
                 </div>
-                </div>
-              
-               <div className="w-full h-[230px] justify-items-center">
+              </div>
+
+              <div className="w-full h-[230px] justify-items-center">
                 <BarGraph walletId={id} />
               </div>
             </div>
           </div>
-
-        {/* Transactions */}
-        <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
-          <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">
-            Transaction History
-          </div>
-          {loading && <p className="text-center text-gray-500 ">Loading...</p>}
-          <div className="m-10">
-            {!loading && transactions.length === 0 ? (
-              <p className="text-center text-gray-500">No transactions found</p>
-            ) : (
-              transactions.map((tx) => (
-                <Transaction key={tx.Tx_id} transaction={tx} />
-              ))
+          {/* Transactions */}
+          <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
+            <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">
+              Transaction History
+            </div>
+            {loading && (
+              <p className="text-center text-gray-500 ">Loading...</p>
+            )}
+            <div className="m-10">
+              {!loading && transactions.length === 0 ? (
+                <p className="text-center text-gray-500">
+                  No transactions found
+                </p>
+              ) : (
+                transactions.map((tx) => (
+                  <Transaction key={tx.Tx_id} transaction={tx} />
+                ))
+              )}
+            </div>
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             )}
           </div>
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          )}
         </div>
-      </div>
       </div>
     </div>
   );

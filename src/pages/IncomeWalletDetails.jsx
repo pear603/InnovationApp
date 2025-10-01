@@ -27,7 +27,7 @@ function IncomeWalletDetails() {
   const [totalPages, setTotalPages] = useState(1);
 
   const TRANSACTIONS_PER_PAGE = 10;
-  const remainingToGoal = (monthlyGoal - currentSaved) / daysLeft;
+  const remainingToGoal = monthlyGoal - currentSaved;
   const currentBalance = currentSaved; // For income wallet, balance = current saved
 
   const calculateDaysLeft = (startDate) => {
@@ -102,7 +102,7 @@ function IncomeWalletDetails() {
         if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
         // Daily goal (after currentSaved fetched)
-        setDailyGoal(days > 0 ? (monthlyGoal - currentSaved) / days : 0);
+        setDailyGoal(days > 0 ? Math.floor((monthlyGoal - currentSaved) / days) : 0);
       } catch (err) {
         setWalletName("Error Loading Wallet");
       } finally {
@@ -134,7 +134,9 @@ function IncomeWalletDetails() {
                 <BalanceLeft
                   balance={currentBalance}
                   day={daysLeft}
-                  daily={remainingToGoal}
+                  daily={dailyGoal}
+                  goal = {monthlyGoal}
+                  variant={"Income"}
                 />
               </div>
 
@@ -156,7 +158,7 @@ function IncomeWalletDetails() {
                 </div>
 
                 <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
-                  <GoodToKnow walletId={id} />
+                  <GoodToKnow totalsave={currentSaved} remaingoal={remainingToGoal} variant="Income"/>
                   <SuggestionBox walletId={id} />
                 </div>
                 </div>
