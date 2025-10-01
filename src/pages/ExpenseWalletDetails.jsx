@@ -135,8 +135,8 @@ function ExpenseWalletDetails() {
           currentBalance={currentBalance}
         /> */}
 
-            <div className="gap-[10px] flex flex-col ">
-              <div className="w-full h-[197px] ">
+            <div className="gap-[10px] flex flex-col">
+              <div className="w-full min-w-[739px] h-[197px] ">
                 <BalanceLeft
                   balance={currentBalance}
                   day={daysLeft}
@@ -169,6 +169,7 @@ function ExpenseWalletDetails() {
               </div>
             </div>
           </div>
+
           {/* Fixed Transaction Area */}
           <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
             <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">

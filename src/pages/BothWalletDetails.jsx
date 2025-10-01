@@ -172,7 +172,7 @@ function BothWalletDetails() {
           </div>
         </div> */}
             <div className="gap-[10px] flex flex-col ">
-              <div className="w-full h-[197px] ">
+              <div className="w-full min-w-[739px] h-[197px] ">
                 <BalanceLeft balance={currentBalance} day={daysLeft} daily ={dailyBudget} variant="Both" goal={dailyGoal}/>
               </div>
 
