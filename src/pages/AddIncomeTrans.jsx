@@ -81,7 +81,7 @@ function AddIncomeTrans() {
                             setCurrentSaved(totalSaved);
 
                             // Calculate daily goal
-                            const dailyGoal = daysLeft > 0 ? (monthlyGoal - totalSaved) / daysLeft : 0;
+                            const dailyGoal = daysLeft > 0 ? Math.floor((monthlyGoal - totalSaved) / daysLeft) : 0;
                             setDailyGoal(dailyGoal);
 
                             console.log('Income data calculated:', {
@@ -180,7 +180,7 @@ function AddIncomeTrans() {
                 setCurrentSaved(newSaved);
 
                 // Recalculate daily goal
-                const newDailyGoal = daysLeft > 0 ? (monthlyGoal - newSaved) / daysLeft : 0;
+                const newDailyGoal = daysLeft > 0 ? Math.floor((monthlyGoal - newSaved) / daysLeft) : 0;
                 setDailyGoal(newDailyGoal);
 
                 setTimeout(() => {
@@ -250,10 +250,10 @@ function AddIncomeTrans() {
                         Monthly Goal: ${monthlyGoal.toLocaleString()}
                     </div>
                     <div className="text-[14px] text-green-600 mt-1">
-                        Currently Saved: ${currentSaved.toFixed(2)} | Remaining: ${(monthlyGoal - currentSaved).toFixed(2)}
+                        Currently Saved: ${currentSaved} | Remaining: ${(monthlyGoal - currentSaved)}
                     </div>
                     <div className="text-[12px] text-blue-600 mt-1">
-                        Daily Goal: ${dailyGoal.toFixed(2)} | Days Left: {daysLeft}
+                        Daily Goal: ${dailyGoal} | Days Left: {daysLeft}
                     </div>
                 </div>
 
