@@ -114,11 +114,11 @@ function IncomeWalletDetails() {
   }, [id, currentPage, monthlyGoal, currentSaved]);
 
   return (
-    <div className="w-full h-full flex flex-row items-start justify-center bg-[#E2EFF3]">
-      <div className="  flex flex-col bg-transparent gap-4" > {/*group all*/}
+    <div  className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
+      <div className="flex flex-col bg-transparent gap-4 mx-20 max-w-[1280px] w-full"> {/*group all*/}
         <h1 className="text-[32px] mt-3">{walletName || "Loading..."}</h1>
-        <div className="gap-[16px] flex flex-row"> {/*group left right area*/}
-          <div className="gap-[16px] flex flex-col"> {/*group left*/}
+        <div className="flex flex-col 2xl:flex-row gap-4 "> {/*group left right area*/}
+          <div className="gap-4 flex flex-col flex-1">{/*group left*/}
             {/* Overview */}
             {/* <Overview
           monthlyGoal={monthlyGoal}
@@ -129,8 +129,8 @@ function IncomeWalletDetails() {
           currentBalance={currentBalance}
         /> */}
         
-            <div className="gap-[10px] flex flex-col"> {/*group balance and buttons*/}
-              <div className="w-[739px] h-[197px] ">
+            <div className="gap-[10px] flex flex-col ">
+              <div className="w-full h-[197px] ">
                 <BalanceLeft
                   balance={currentBalance}
                   day={daysLeft}
@@ -139,36 +139,37 @@ function IncomeWalletDetails() {
               </div>
 
               {/* Income Buttons */}
-              <div className="mt-2 flex flex-row w-full max-w-[739px] h-[50px]">
-                <div className=" grid grid-cols w-full h-full gap-2 w-full">
+                <div className="mt-2 flex flex-row w-full h-[50px]">
+
                   <Insert onClick={() => navigate(`/IncomeTx/${id}`)} />
-                </div>
+                
               </div>
             </div>
 
             {/* Stats */}
-              <div className="flex flex-col bg-white w-[741px] h-[691px] border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
+  <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
               <div  className=" text-[24px] font-normal">Statistics</div>
-              <div className="flex flex-cols-2 w-fit h-[291px] justify-items-center ">
-                <div className="flex gap-5" > 
-                 <div className="w-[319px] h-[291px]">
+
+                 <div className="flex flex-col sm:flex-row md:flex-row gap-5" >
+                 <div className="w-full md:w-1/2 h-[291px]">
                     <PieStats/>
                 </div>
-                <div className="w-[331px] h-[291px] flex flex-col gap-4">
+
+                <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
                   <GoodToKnow walletId={id} />
                   <SuggestionBox walletId={id} />
                 </div>
-              </div>
-              </div>
-               <div className="w-[635px] h-[230px] justify-items-center">
+                </div>
+              
+               <div className="w-full h-[230px] justify-items-center">
                 <BarGraph walletId={id} />
               </div>
             </div>
           </div>
 
           {/* Fixed Transaction Area */}
-          <div className="w-[523px] h-[962px] bg-white border border-black/25 rounded-[10px]">
-            <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">
+        <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
+          <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">
               Transaction History
             </div>
             {loading && <p className="text-center text-gray-500">Loading...</p>}

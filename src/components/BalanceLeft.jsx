@@ -54,6 +54,9 @@ function BalanceLeft({day,balance,daily, variant, goal}) {
             )}
           </>
         )}
+        {dailyAvaliable !== "On" && (
+          <p className="text-base sm:text-lg md:text-xl text-[#5C5C5C]">
+            Daily balance tracking is off</p>)}
       </div>
     </div>
   );
