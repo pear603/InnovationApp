@@ -40,7 +40,7 @@ function BalanceLeft({
   }, [id]);
 
   return (
-    <div className="w-full bg-white rounded-lg flex flex-row items-start px-4 py-4 border border-black/25 gap-6">
+    <div className="w-full  bg-white rounded-lg flex flex-row items-start px-4 py-4 border border-black/25 gap-6">
       <WalletIcon image={walletIcon} />
 
       <div className="flex-1 flex flex-col pt-3 gap-3">

@@ -179,8 +179,9 @@ function BothWalletDetails() {
             <div className="text-sm text-gray-600 mt-1">Days Left: {daysLeft} days</div>
           </div>
         </div> */}
-            <div className="gap-[10px] flex flex-col ">
-              <div className="w-full min-w-[739px] h-[197px] ">
+            <div className="w-full gap-[10px] flex flex-col ">
+              <div className="w-full flex justify-center flex-1 ">
+              <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
                 <BalanceLeft
                   balance={currentBalance}
                   day={daysLeft}
@@ -190,6 +191,7 @@ function BothWalletDetails() {
                   goal={monthlyGoal}
                   budget={monthlyBudget}
                 />
+              </div>
               </div>
 
               {/* Action Buttons */}
@@ -223,7 +225,7 @@ function BothWalletDetails() {
           </div>
           {/* Transactions */}
           <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
-            <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">
+            <div className="mt-5 ml-10 mb-10 text-2xl font-normal">
               Transaction History
             </div>
             {loading && (
