@@ -42,7 +42,7 @@ function Transaction({ transaction, index }) {
     // </div>
     <div className={`${base} `}>
       <div className="w-full h-[50px] flex gap-[12px]">
-        <div className="w-[46px] h-[46px] rounded-full bg-[#D9D9D9] flex-shrink-0 "></div>
+        {/* <div className="w-[46px] h-[46px] rounded-full bg-[#D9D9D9] flex-shrink-0 "></div> */}
         <div className="w-full h-[50px]">
           <div
             className={`w-full h-[24px] flex justify-between items-center text-xl ${amountClass}`}
@@ -50,9 +50,9 @@ function Transaction({ transaction, index }) {
             <p>{Tag?.Name || 'Uncategorized'}</p>
             <p>{amountPrefix}${Math.abs(TxAmount || 0).toLocaleString()} ฿</p>
           </div>
-          <div className="w-full h-[24px] flex justify-between items-center text-base text-[#707376]">
-            <p>{TxNote || 'No description'}</p>
-            <p>{formatDate(CreatedDate)}</p>
+          <div className="w-full h-[24px] flex justify-between items-center text-base text-[#707376] gap-6">
+            <p className="truncate">{(TxNote || 'No description').slice(0, 20)}{(TxNote?.length > 20) && '…'}</p>
+            <p className="whitespace-nowrap">{formatDate(CreatedDate)}</p>
           </div>
         </div>
       </div>

@@ -130,7 +130,8 @@ function IncomeWalletDetails() {
         /> */}
         
             <div className="gap-[10px] flex flex-col ">
-              <div className="w-full min-w-[739px] h-[197px] ">
+              <div className="w-full flex justify-center flex-1 ">
+              <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
                 <BalanceLeft
                   balance={currentBalance}
                   day={daysLeft}
@@ -138,6 +139,7 @@ function IncomeWalletDetails() {
                   goal = {monthlyGoal}
                   variant={"Income"}
                 />
+              </div>
               </div>
 
               {/* Income Buttons */}
@@ -171,7 +173,7 @@ function IncomeWalletDetails() {
 
           {/* Fixed Transaction Area */}
         <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
-          <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">
+          <div className="mt-5 ml-10 mb-10 text-2xl font-normal">
               Transaction History
             </div>
             {loading && <p className="text-center text-gray-500">Loading...</p>}
