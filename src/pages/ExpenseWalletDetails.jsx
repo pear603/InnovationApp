@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { supabase } from "../assets/supabaseClient";
+import { TransactionService } from "../components/TransactionService"; 
 import ExpenseBtn from "../components/ExpenseBtn";
 import Transaction from "../components/Ohma/Transaction";
 import Pagination from "../components/Ohma/Pagination";
@@ -30,80 +30,34 @@ function ExpenseWalletDetails() {
   const remainingBudget = (monthlyBudget - totalSpent);
   const currentBalance = monthlyBudget - totalSpent; // For expense wallet, balance = total spent
 
-  const calculateDaysLeft = (startDate) => {
-    const end = new Date(startDate);
-    end.setMonth(end.getMonth() + 1);
-    return Math.max(0, Math.ceil((end - new Date()) / (1000 * 3600 * 24)));
-  };
-
-  useEffect(() => {
+ useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
       setLoading(true);
-
       try {
-        // Wallet info
-        const { data: wallet } = await supabase
-          .from("Wallet")
-          .select("WalletName, StartDate")
-          .eq("Wallet_id", id)
-          .single();
+        // -----------------------------
+        // 1. Get wallet info from service
+        // -----------------------------
+        const walletInfo = await TransactionService.getWalletInfo(id, "expense");
+        setWalletName(walletInfo.walletName || "Wallet Not Found");
+        setMonthlyBudget(walletInfo.originalBudget || 0);
+        setTotalSpent(walletInfo.currentSpent || 0);
+        setDaysLeft(walletInfo.daysLeft || 0);
+        setDailyLimit(walletInfo.dailyBudget || 0);
 
-        setWalletName(wallet?.WalletName || "Wallet Not Found");
-        const days = wallet ? calculateDaysLeft(wallet.StartDate) : 0;
-        setDaysLeft(days);
-
-        // Monthly budget
-        const { data: expenseWallet } = await supabase
-          .from("ExpenseWallet")
-          .select("Budget")
-          .eq("Wallet_id", id)
-          .single();
-        setMonthlyBudget(expenseWallet?.Budget || 0);
-
-        // Transactions
-        const { data: allTx } = await supabase
-          .from("Transaction")
-          .select("TxAmount, TxType_id")
-          .eq("Wallet_id", id);
-
-        const { data: expenseType } = await supabase
-          .from("TxType")
-          .select("TxType_id")
-          .eq("TxType", "Expense")
-          .single();
-
-        if (expenseType && allTx) {
-          const total = allTx
-            .filter((tx) => tx.TxType_id === expenseType.TxType_id)
-            .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
-          setTotalSpent(total);
-        }
-
-        // Paginated transactions
+        // -----------------------------
+        // 2. Fetch paginated transactions
+        // -----------------------------
         const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
         const to = from + TRANSACTIONS_PER_PAGE - 1;
 
-        const { data: pageTx, count } = await supabase
-          .from("Transaction")
-          .select(
-            `
-            *,
-            Tag:Tag_id (Name),
-            TxType:TxType_id (TxType)
-          `,
-            { count: "exact" }
-          )
-          .eq("Wallet_id", id)
-          .order("CreatedDate", { ascending: false })
-          .range(from, to);
+        const { data: pageTx, count } = await TransactionService.getTransactions(id, from, to);
 
         setTransactions(pageTx || []);
         if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
-        // Daily limit
-        setDailyLimit(days > 0 ? Math.floor((monthlyBudget - totalSpent) / days) : 0);
-      } catch {
+      } catch (err) {
+        console.error(err);
         setWalletName("Error Loading Wallet");
       } finally {
         setLoading(false);
@@ -111,7 +65,7 @@ function ExpenseWalletDetails() {
     };
 
     fetchData();
-  }, [id, currentPage, monthlyBudget, totalSpent]);
+  }, [id, currentPage]);
 
   return (
     <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
@@ -136,8 +90,7 @@ function ExpenseWalletDetails() {
         /> */}
 
             <div className="gap-[10px] flex flex-col">
-              <div className="w-full flex justify-center flex-1 ">
-              <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
+              <div className="w-full min-w-[739px] h-[197px] ">
                 <BalanceLeft
                   balance={currentBalance}
                   day={daysLeft}
@@ -145,7 +98,6 @@ function ExpenseWalletDetails() {
                   variant={"Expenxe"}
                   budget = {monthlyBudget}
                 />
-              </div>
               </div>
 
               <div className="mt-2 flex flex-row w-full h-[50px]">
@@ -176,7 +128,7 @@ function ExpenseWalletDetails() {
 
           {/* Fixed Transaction Area */}
           <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
-            <div className="mt-5 ml-10 mb-10 text-2xl font-normal">
+            <div className="mt-5 ml-10 mb-10 text-[29px] font-normal">
               Transaction History
             </div>
             {loading && <p className="text-center text-gray-500">Loading...</p>}

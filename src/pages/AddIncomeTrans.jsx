@@ -5,10 +5,12 @@ import Income from "../components/Ohma/Income";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from '../assets/supabaseClient';
 import { useEffect, useState } from "react";
+import { TransactionService } from '../components/TransactionService';
 
 function AddIncomeTrans() {
     const navigate = useNavigate();
     const { id: walletId } = useParams();
+
     const [walletType, setWalletType] = useState('');
     const [walletName, setWalletName] = useState('');
     const [monthlyGoal, setMonthlyGoal] = useState(0);
@@ -20,84 +22,23 @@ function AddIncomeTrans() {
     const [note, setNote] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const calculateDaysLeft = (startDateString) => {
-        if (!startDateString) return 30;
-        const start = new Date(startDateString);
-        const end = new Date(start);
-        end.setMonth(end.getMonth() + 1);
-        const today = new Date();
-        const timeDiff = end.getTime() - today.getTime();
-        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        return Math.max(0, daysLeft);
-    };
-
     useEffect(() => {
-        const getWalletInfo = async () => {
+        const fetchWallet = async () => {
             try {
-                if (walletId) {
-                    console.log('Fetching wallet info for:', walletId);
-
-                    const { data: wallet, error: walletError } = await supabase
-                        .from('Wallet')
-                        .select('WalletName, WalletType, StartDate')
-                        .eq('Wallet_id', walletId)
-                        .single();
-
-                    if (walletError) {
-                        console.error('Error fetching wallet:', walletError);
-                    } else if (wallet) {
-                        console.log('Wallet data received:', wallet);
-                        setWalletType(wallet.WalletType || '');
-                        setWalletName(wallet.WalletName || '');
-
-                        const daysLeft = calculateDaysLeft(wallet.StartDate);
-                        setDaysLeft(daysLeft);
-                    }
-
-                    // Get monthly goal from IncomeWallet
-                    const { data: incomeWallet, error: goalError } = await supabase
-                        .from('IncomeWallet')
-                        .select('Goal')
-                        .eq('Wallet_id', walletId)
-                        .single();
-
-                    if (goalError) {
-                        console.error('Error fetching Goal:', goalError);
-                    } else if (incomeWallet) {
-                        const monthlyGoal = incomeWallet.Goal || 0;
-                        setMonthlyGoal(monthlyGoal);
-
-                        // Calculate total saved from income transactions
-                        const { data: transactions, error: txError } = await supabase
-                            .from('Transaction')
-                            .select('TxAmount, TxType:TxType_id(TxType)')
-                            .eq('Wallet_id', walletId);
-
-                        if (!txError && transactions) {
-                            const totalSaved = transactions
-                                .filter(tx => tx.TxType?.TxType === 'Income')
-                                .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
-
-                            setCurrentSaved(totalSaved);
-
-                            // Calculate daily goal
-                            const dailyGoal = daysLeft > 0 ? Math.floor((monthlyGoal - totalSaved) / daysLeft) : 0;
-                            setDailyGoal(dailyGoal);
-
-                            console.log('Income data calculated:', {
-                                monthlyGoal: monthlyGoal,
-                                saved: totalSaved,
-                                daysLeft: daysLeft,
-                                dailyGoal: dailyGoal
-                            });
-                        }
-                    }
+                const walletData = await TransactionService.getWalletInfo(walletId, 'income');
+                if (walletData) {
+                    setWalletType(walletData.walletType);
+                    setWalletName(walletData.walletName);
+                    setMonthlyGoal(walletData.monthlyGoal || 0);
+                    setCurrentSaved(walletData.currentSaved || 0);
+                    setDaysLeft(walletData.daysLeft || 0);
+                    setDailyGoal(walletData.dailyGoal || 0);
                 }
-            } catch (error) {
-                console.error('Error getting wallet info:', error);
+            } catch (err) {
+                console.error('Error fetching wallet info:', err);
             }
         };
-        getWalletInfo();
+        fetchWallet();
     }, [walletId]);
 
     const handleClose = () => {
@@ -117,89 +58,6 @@ function AddIncomeTrans() {
         }
     };
 
-    const validateIncome = (walletId, tagId, txAmount, note) => {
-        if (!walletId) {
-            throw new Error('Wallet ID is required');
-        }
-        if (!tagId) {
-            throw new Error('Please select a tag');
-        }
-        const amountNum = parseFloat(txAmount);
-        if (!txAmount || isNaN(amountNum) || amountNum <= 0) {
-            throw new Error('Please enter a valid amount (numbers only)');
-        }
-        return true;
-    };
-
-    const insertIncome = async (walletId, tagId, txAmount, note) => {
-        const transactionId = crypto.randomUUID();
-
-        const { data: txType, error: txTypeError } = await supabase
-            .from("TxType")
-            .select("TxType_id")
-            .eq("TxType", "Income")
-            .single();
-
-        if (txTypeError) {
-            throw new Error("Could not fetch income type-ID: " + txTypeError.message);
-        }
-
-        const { data: transactionData, error: transactionError } = await supabase
-            .from('Transaction')
-            .insert([
-                {
-                    TxNote: note,
-                    TxAmount: txAmount,
-                    CreatedDate: new Date().toISOString(),
-                    Wallet_id: walletId,
-                    Tx_id: transactionId,
-                    Tag_id: tagId,
-                    TxType_id: txType.TxType_id
-                }
-            ])
-            .select()
-
-        if (transactionError) {
-            throw new Error('Failed to add transaction: ' + transactionError.message);
-        }
-        return transactionData;
-    };
-
-    const addIncome = async (walletId, tagId, txAmount, note) => {
-        setLoading(true);
-        try {
-            validateIncome(walletId, tagId, txAmount, note);
-            validateNote(note);
-
-            const transactionData = await insertIncome(walletId, tagId, txAmount, note);
-            if (transactionData && transactionData[0] && transactionData[0].Tx_id) {
-                alert(`Income of $${amount} added successfully!`);
-
-                // Update local state
-                const newSaved = currentSaved + parseFloat(txAmount);
-                setCurrentSaved(newSaved);
-
-                // Recalculate daily goal
-                const newDailyGoal = daysLeft > 0 ? Math.floor((monthlyGoal - newSaved) / daysLeft) : 0;
-                setDailyGoal(newDailyGoal);
-
-                setTimeout(() => {
-                    handleClose();
-                }, 1000);
-            } else {
-                throw new Error('Transaction creation failed');
-            }
-
-            return transactionData;
-        } catch (error) {
-            console.error('Error adding income:', error);
-            alert(error.message);
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleAddIncome = async () => {
         if (!amount) {
             alert('Please enter an amount');
@@ -209,26 +67,40 @@ function AddIncomeTrans() {
             alert('Please select a tag');
             return;
         }
-        await addIncome(walletId, tagId, parseFloat(amount), note);
+
+        setLoading(true);
+        try {
+            TransactionService.validateIncome(walletId, tagId, parseFloat(amount));
+            TransactionService.validateNote(note);
+
+            const transactionData = await TransactionService.insertTransaction(walletId, tagId, parseFloat(amount), note, 'Income');
+
+            if (transactionData && transactionData[0]?.Tx_id) {
+                alert(`Income of $${amount} added successfully!`);
+
+                const newSaved = currentSaved + parseFloat(amount);
+                setCurrentSaved(newSaved);
+
+                const newDailyGoal = TransactionService.calcDailyBudget(monthlyGoal - newSaved, daysLeft);
+                setDailyGoal(newDailyGoal);
+
+                setTimeout(() => handleClose(), 1000);
+            } else {
+                throw new Error('Transaction creation failed');
+            }
+        } catch (err) {
+            alert(err.message);
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const getButtonText = () => {
-        if (loading) {
-            return 'Processing...';
-        }
-        const displayAmount = amount && !isNaN(parseFloat(amount))
-            ? parseFloat(amount).toLocaleString()
-            : '0';
+        if (loading) return 'Processing...';
+        const displayAmount = amount && !isNaN(parseFloat(amount)) ? parseFloat(amount).toLocaleString() : '0';
         return `Add Income - $${displayAmount}`;
     };
-
-    const validateNote = (note) => {
-        if (note && (note.length < 1 || note.length > 20)) {
-            throw new Error('Note must be between 1 and 20 characters');
-        }
-        return true;
-    };
-
     return (
         <div className="w-screen h-screen flex flex-row items-start justify-center bg-[#E2EFF3]">
             <div className="mt-30 w-[632px] h-[420px] bg-white border border-black/25 rounded-[10px] drop-shadow-lg">
