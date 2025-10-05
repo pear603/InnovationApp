@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { supabase } from "../assets/supabaseClient";
+import { TransactionService } from "../components/TransactionService";
 import Insert from "../components/Ohma/Insert";
 import PieStats from "../components/Ohma/PieStats";
 import BarGraph from "../components/Ohma/BarGraph";
@@ -8,7 +8,6 @@ import GoodToKnow from "../components/Ohma/GoodToKnow";
 import SuggestionBox from "../components/Ohma/SuggestionBox";
 import Transaction from "../components/Ohma/Transaction";
 import Pagination from "../components/Ohma/Pagination";
-import BalanceLeftIncome from "../components/BalanceLeftIncome";
 import BalanceLeft from "../components/BalanceLeft";
 import "../tailwind.css";
 
@@ -16,102 +15,65 @@ function IncomeWalletDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const [walletInfo, setWalletInfo] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [walletName, setWalletName] = useState("");
-  const [monthlyGoal, setMonthlyGoal] = useState(0);
-  const [currentSaved, setCurrentSaved] = useState(0);
-  const [daysLeft, setDaysLeft] = useState(0);
-  const [dailyGoal, setDailyGoal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const TRANSACTIONS_PER_PAGE = 10;
-  const remainingToGoal = monthlyGoal - currentSaved;
-  const currentBalance = currentSaved; // For income wallet, balance = current saved
 
-  const calculateDaysLeft = (startDate) => {
-    const end = new Date(startDate);
-    end.setMonth(end.getMonth() + 1);
-    return Math.max(0, Math.ceil((end - new Date()) / (1000 * 3600 * 24)));
-  };
-
+  // Fetch wallet info
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchWallet = async () => {
       if (!id) return;
       setLoading(true);
-
       try {
-        // Wallet info
-        const { data: wallet } = await supabase
-          .from("Wallet")
-          .select("WalletName, StartDate")
-          .eq("Wallet_id", id)
-          .single();
-
-        setWalletName(wallet?.WalletName || "Wallet Not Found");
-        const days = wallet ? calculateDaysLeft(wallet.StartDate) : 0;
-        setDaysLeft(days);
-
-        // Monthly goal
-        const { data: incomeWallet } = await supabase
-          .from("IncomeWallet")
-          .select("Goal")
-          .eq("Wallet_id", id)
-          .single();
-        setMonthlyGoal(incomeWallet?.Goal || 0);
-
-        // Transactions (all, to calculate total saved)
-        const { data: allTx } = await supabase
-          .from("Transaction")
-          .select("TxAmount, TxType_id")
-          .eq("Wallet_id", id);
-
-        const { data: incomeType } = await supabase
-          .from("TxType")
-          .select("TxType_id")
-          .eq("TxType", "Income")
-          .single();
-
-        if (incomeType && allTx) {
-          const total = allTx
-            .filter((tx) => tx.TxType_id === incomeType.TxType_id)
-            .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
-          setCurrentSaved(total);
-        }
-
-        // Paginated transactions
-        const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
-        const to = from + TRANSACTIONS_PER_PAGE - 1;
-
-        const { data: pageTx, count } = await supabase
-          .from("Transaction")
-          .select(
-            `
-            *,
-            Tag:Tag_id (Name),
-            TxType:TxType_id (TxType)
-          `,
-            { count: "exact" }
-          )
-          .eq("Wallet_id", id)
-          .order("CreatedDate", { ascending: false })
-          .range(from, to);
-
-        setTransactions(pageTx || []);
-        if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
-
-        // Daily goal (after currentSaved fetched)
-        setDailyGoal(days > 0 ? Math.floor((monthlyGoal - currentSaved) / days) : 0);
+        const info = await TransactionService.validateWalletType(id, "income");
+        setWalletInfo(info);
       } catch (err) {
-        setWalletName("Error Loading Wallet");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
+    fetchWallet();
+  }, [id]);
 
-    fetchData();
-  }, [id, currentPage, monthlyGoal, currentSaved]);
+  // Fetch paginated transactions
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
+        const to = from + TRANSACTIONS_PER_PAGE - 1;
+        const { data, count } = await TransactionService.getTransactions(id, from, to);
+        setTransactions(data);
+        setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, [id, currentPage]);
+
+  if (loading || !walletInfo) return <p className="text-center mt-10">Loading...</p>;
+
+  const {
+    walletName,
+    monthlyGoal = 0,
+    currentSaved = 0,
+    daysLeft = 0,
+    dailyGoal = 0,
+  } = walletInfo;
+
+  const remainingToGoal = monthlyGoal - currentSaved;
+  const currentBalance = currentSaved;
+
+  if (!walletName) return <p className="text-center mt-10">Loading...</p>;
 
   return (
     <div  className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
