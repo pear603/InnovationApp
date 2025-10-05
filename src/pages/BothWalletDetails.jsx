@@ -29,7 +29,7 @@ function BothWalletDetails() {
       if (!id) return;
       setLoading(true);
       try {
-        const info = await TransactionService.getWalletInfo(id, "both");
+        const info = await TransactionService.validateWalletType(id, "both");
         setWalletInfo(info);
 
         const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;

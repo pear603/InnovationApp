@@ -29,7 +29,7 @@ function IncomeWalletDetails() {
       if (!id) return;
       setLoading(true);
       try {
-        const info = await TransactionService.getWalletInfo(id, "income");
+        const info = await TransactionService.validateWalletType(id, "income");
         setWalletInfo(info);
       } catch (err) {
         console.error(err);

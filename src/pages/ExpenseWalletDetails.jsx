@@ -38,7 +38,7 @@ function ExpenseWalletDetails() {
         // -----------------------------
         // 1. Get wallet info from service
         // -----------------------------
-        const walletInfo = await TransactionService.getWalletInfo(id, "expense");
+        const walletInfo = await TransactionService.validateWalletType(id, "expense");
         setWalletName(walletInfo.walletName || "Wallet Not Found");
         setMonthlyBudget(walletInfo.originalBudget || 0);
         setTotalSpent(walletInfo.currentSpent || 0);

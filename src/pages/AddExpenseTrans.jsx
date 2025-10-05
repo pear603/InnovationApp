@@ -25,7 +25,7 @@ function AddExpenseTrans() {
     useEffect(() => {
         const fetchWallet = async () => {
             try {
-                const walletData = await TransactionService.getWalletInfo(walletId, 'expense');
+                const walletData = await TransactionService.validateWalletType(walletId, 'expense');
                 if (walletData) {
                     setWalletName(walletData.walletName);
                     setWalletType(walletData.walletType);

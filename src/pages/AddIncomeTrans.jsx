@@ -25,7 +25,7 @@ function AddIncomeTrans() {
     useEffect(() => {
         const fetchWallet = async () => {
             try {
-                const walletData = await TransactionService.getWalletInfo(walletId, 'income');
+                const walletData = await TransactionService.validateWalletType(walletId, 'income');
                 if (walletData) {
                     setWalletType(walletData.walletType);
                     setWalletName(walletData.walletName);
@@ -81,7 +81,7 @@ function AddIncomeTrans() {
                 const newSaved = currentSaved + parseFloat(amount);
                 setCurrentSaved(newSaved);
 
-                const newDailyGoal = TransactionService.calcDailyBudget(monthlyGoal - newSaved, daysLeft);
+                const newDailyGoal = TransactionService.calcDailyGoal(monthlyGoal - newSaved, daysLeft);
                 setDailyGoal(newDailyGoal);
 
                 setTimeout(() => handleClose(), 1000);
