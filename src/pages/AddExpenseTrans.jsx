@@ -25,7 +25,7 @@ function AddExpenseTrans() {
     useEffect(() => {
         const fetchWallet = async () => {
             try {
-                const walletData = await TransactionService.validateWalletType(walletId, 'expense');
+                const walletData = await TransactionService.validateWalletType(walletId);
                 if (walletData) {
                     setWalletName(walletData.walletName);
                     setWalletType(walletData.walletType);
@@ -71,7 +71,7 @@ function AddExpenseTrans() {
 
         setLoading(true);
         try {
-            // Validate ผ่าน Service
+            // Validate 
             TransactionService.validateExpense(walletId, tagId, parseFloat(amount));
             TransactionService.validateNote(note);
 
@@ -81,7 +81,7 @@ function AddExpenseTrans() {
             if (transactionData && transactionData[0]?.Tx_id) {
                 alert(`Expense of $${amount} added successfully!`);
 
-                // อัปเดต state โดยใช้ TransactionService คำนวณ
+                // Update
                 const newCurrentSpent = currentSpent + parseFloat(amount);
                 const newRemainingBudget = remainingBudget - parseFloat(amount);
                 const newDailyBudget = TransactionService.calcDailyBudget(newRemainingBudget, daysLeft);
