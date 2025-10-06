@@ -41,6 +41,9 @@ function WalletAnalytic() {
 
   const [user, setUser] = useState(null);
   const [transaction, setTransaction] = useState([]);
+  const [balance, setBalance] = useState(0);
+  const [count, setCount] = useState(0);
+  const [archived, setArchived] = useState(0);
   const [pieData, setPieData] = useState(null);
   const [barData, setBarData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -60,6 +63,15 @@ function WalletAnalytic() {
         if (user) {
           const transactionData = await AnalyticService.getTransaction(user.id);
           setTransaction(transactionData);
+
+          const balance = AnalyticService.processAllBalance(user.id);
+          setBalance(balance);
+
+          const count = AnalyticService.countUserWallets(user.id);
+          setCount(count);
+
+          const archived = AnalyticService.archivedWallet(user.id);
+          setArchived(archived);
 
           setTotalPages(
             Math.ceil(transactionData.length / TRANSACTIONS_PER_PAGE)
@@ -126,7 +138,7 @@ function WalletAnalytic() {
             <div className="gap-[10px] flex flex-col ">
               <div className="w-full flex justify-center flex-1 ">
                 <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
-                  <BalanceLeft />
+                  <BalanceLeft variant={"Analytic"} balance={balance} walletNum={count} archived={archived}/>
                 </div>
               </div>
             </div>

@@ -81,18 +81,6 @@ function IncomeWalletDetails() {
         setTransactions(data);
         setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
-        const summary = AnalyticService.processTransactions(data);
-        // const chartData = {
-        //     labels: Object.keys(summary), // e.g. ["Expense", "Income"]
-        //     datasets: [
-        //       {
-        //         data: Object.values(summary).map((tags) =>
-        //           Object.values(tags).reduce((a, b) => a + b, 0)
-        //         ),
-        //         backgroundColor: ["#E16451", "#9AD24B"], // colors
-        //       },
-        //     ],
-        //   };
         const chartData = AnalyticService.processPieData(data);
 
           setPieData(chartData);

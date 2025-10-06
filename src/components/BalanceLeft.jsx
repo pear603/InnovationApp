@@ -13,6 +13,8 @@ function BalanceLeft({
   budget,
   dailygoal,
   dailybudget,
+  walletNum,
+  archived
 }) {
   const { id } = useParams();
   const [dailyAvaliable, setDailyAvaliable] = useState(null);
@@ -71,7 +73,7 @@ function BalanceLeft({
                   </p>
                 </>
               )}
-              
+
               {variant === "Both" && (
                 <>
                   <p className="text-base sm:text-lg md:text-xl text-[#5C5C5C] underline">
@@ -87,10 +89,22 @@ function BalanceLeft({
               )}
             </>
           )}
-          {dailyAvaliable !== "On" && (
+          {dailyAvaliable === "Off" && (
             <p className="text-base sm:text-lg md:text-xl text-[#5C5C5C]">
               Daily balance tracking is off
             </p>
+          )}
+
+
+          {variant === "Analytic" && (
+            <>
+              <p className="text-base sm:text-lg md:text-xl text-[#5C5C5C] underline">
+                {walletNum} wallets
+              </p>
+              <p className="text-base sm:text-lg md:text-xl text-[#5C5C5C] underline">
+                {archived} Goals Archived
+              </p>
+            </>
           )}
         </div>
       </div>

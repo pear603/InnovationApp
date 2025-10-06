@@ -9,7 +9,7 @@ function GoodToKnow({totalspent, remainbudget, totalsave, remaingoal , variant})
           Good to Know
         </h1>
         {variant === "Both"&&(
-        <div className="text-[18px] pl-[24px] pt-[2px] pr-[60px] pb-[20px] tracking-tight leading-snug">
+        <div className="text-[18px] pl-[24px] pt-[2px] pr-[20px] pb-[20px] tracking-tight leading-snug">
           <p className="text-gray-700">
         This month you have spent <strong>{totalspent} ฿</strong> and saved <strong>{totalsave} ฿</strong>.
       </p>
@@ -19,7 +19,7 @@ function GoodToKnow({totalspent, remainbudget, totalsave, remaingoal , variant})
         </div>)}
 
         {variant === "Income"&&(
-        <div className="text-[18px] pl-[24px] pt-[2px] pr-[60px] pb-[20px] tracking-tight leading-snug">
+        <div className="text-[18px] pl-[24px] pt-[2px] pr-[20px] pb-[20px] tracking-tight leading-snug">
           <p className="text-gray-700">
         This month you have saved <strong>{totalsave} ฿</strong>.
       </p>
@@ -29,7 +29,7 @@ function GoodToKnow({totalspent, remainbudget, totalsave, remaingoal , variant})
         </div>)}
 
         {variant === "Expense"&&(
-        <div className="text-[18px] pl-[24px] pt-[2px] pr-[60px] pb-[20px] tracking-tight leading-snug">
+        <div className="text-[18px] pl-[24px] pt-[2px] pr-[20px] pb-[20px] tracking-tight leading-snug">
           <p className="text-gray-700">
         This month you have spent <strong>{totalspent} ฿</strong>.
       </p>
