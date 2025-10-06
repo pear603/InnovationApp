@@ -43,7 +43,7 @@ function WalletAnalytic() {
   const [transaction, setTransaction] = useState([]);
   const [pieData, setPieData] = useState(null);
     const [barData, setBarData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
    const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ function WalletAnalytic() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-
+      try {
       if (user) {
         const transactionData = await AnalyticService.getTransaction(user.id);
         setTransaction(transactionData);
@@ -79,6 +79,11 @@ function WalletAnalytic() {
         setBarData(barChartData);
 
       }
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    } finally {
+      setLoading(false);
+    }
     };
 
     fetchData();
