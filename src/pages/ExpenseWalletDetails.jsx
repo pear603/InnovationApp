@@ -35,9 +35,8 @@ function ExpenseWalletDetails() {
       if (!id) return;
       setLoading(true);
       try {
-        // -----------------------------
-        // 1. Get wallet info from service
-        // -----------------------------
+
+        // Get wallet info from service
         const walletInfo = await TransactionService.validateWalletType(id, "expense");
         setWalletName(walletInfo.walletName || "Wallet Not Found");
         setMonthlyBudget(walletInfo.originalBudget || 0);
@@ -45,9 +44,7 @@ function ExpenseWalletDetails() {
         setDaysLeft(walletInfo.daysLeft || 0);
         setDailyLimit(walletInfo.dailyBudget || 0);
 
-        // -----------------------------
-        // 2. Fetch paginated transactions
-        // -----------------------------
+        // Fetch paginated transactions
         const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
         const to = from + TRANSACTIONS_PER_PAGE - 1;
 
