@@ -25,7 +25,7 @@ function AddIncomeTrans() {
     useEffect(() => {
         const fetchWallet = async () => {
             try {
-                const walletData = await TransactionService.validateWalletType(walletId, 'income');
+                const walletData = await TransactionService.validateWalletType(walletId);
                 if (walletData) {
                     setWalletType(walletData.walletType);
                     setWalletName(walletData.walletName);
