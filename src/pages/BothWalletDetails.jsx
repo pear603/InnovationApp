@@ -1,3 +1,6 @@
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { TransactionService } from "../components/TransactionService";
 import GoodToKnow from "../components/Ohma/GoodToKnow";
 import SuggestionBox from "../components/Ohma/SuggestionBox";
 import PieStats from "../components/Ohma/PieStats";
@@ -7,135 +10,61 @@ import ExpenseBtn from "../components/ExpenseBtn";
 import Insert from "../components/Ohma/Insert";
 import Transaction from "../components/Ohma/Transaction";
 import BalanceLeft from "../components/BalanceLeft";
-import { useNavigate, useParams } from "react-router-dom";
-import { supabase } from "../assets/supabaseClient";
-import { useEffect, useState } from "react";
 import Pagination from "../components/Ohma/Pagination";
 
 function BothWalletDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const [walletInfo, setWalletInfo] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [walletName, setWalletName] = useState("");
-  const [monthlyBudget, setmonthlyBudget] = useState(0);
-  const [currentSpent, setCurrentSpent] = useState(0);
-  const [currentSaved, setCurrentSaved] = useState(0);
-  const [daysLeft, setDaysLeft] = useState(0);
-  const [monthlyGoal, setMonthlyGoal] = useState(0);
-  const [loading, setLoading] = useState(false);
 
   const TRANSACTIONS_PER_PAGE = 10;
-  const remainingBudget = monthlyBudget - currentSpent;
-  const remainingToGoal = monthlyGoal - currentSaved;
-  const currentBalance = monthlyBudget - currentSpent + currentSaved;
-  const dailyBudget = daysLeft > 0 ? Math.floor(remainingBudget / daysLeft) : 0;
-  const dailyGoal = daysLeft > 0 ? Math.floor(remainingToGoal / daysLeft) : 0;
-
-  const calculateDaysLeft = (startDate) => {
-    const end = new Date(startDate);
-    end.setMonth(end.getMonth() + 1);
-    return Math.max(0, Math.ceil((end - new Date()) / (1000 * 3600 * 24)));
-  };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchWallet = async () => {
       if (!id) return;
       setLoading(true);
-
       try {
-        // Wallet info - get WalletType too!
-        const { data: wallet } = await supabase
-          .from("Wallet")
-          .select("WalletName, StartDate, WalletType")
-          .eq("Wallet_id", id)
-          .single();
+        const info = await TransactionService.validateWalletType(id, "both");
+        setWalletInfo(info);
 
-        setWalletName(wallet?.WalletName || "Wallet Not Found");
-        const days = wallet ? calculateDaysLeft(wallet.StartDate) : 0;
-        setDaysLeft(days);
-
-        if (wallet?.WalletType === "Both") {
-          // Fetch from BothWallet table for combined wallets
-          const { data: bothWallet, error } = await supabase
-            .from("BothWallet")
-            .select("Budget, Goal")
-            .eq("Wallet_id", id)
-            .single();
-
-          setmonthlyBudget(bothWallet?.Budget || 0);
-          setMonthlyGoal(bothWallet?.Goal || 0);
-          if (error) {
-            console.error("Error fetching data:", error);
-          }
-        }
-
-        // Get all transactions to calculate totals
-        const { data: allTx } = await supabase
-          .from("Transaction")
-          .select("TxAmount, TxType_id")
-          .eq("Wallet_id", id);
-
-        if (allTx) {
-          const [{ data: expenseType }, { data: incomeType }] =
-            await Promise.all([
-              supabase
-                .from("TxType")
-                .select("TxType_id")
-                .eq("TxType", "Expense")
-                .single(),
-              supabase
-                .from("TxType")
-                .select("TxType_id")
-                .eq("TxType", "Income")
-                .single(),
-            ]);
-
-          if (expenseType && incomeType) {
-            const totalSpent = allTx
-              .filter((tx) => tx.TxType_id === expenseType.TxType_id)
-              .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
-            const totalSaved = allTx
-              .filter((tx) => tx.TxType_id === incomeType.TxType_id)
-              .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
-            setCurrentSpent(totalSpent);
-            setCurrentSaved(totalSaved);
-          }
-        }
-
-        //Pages for transactions
         const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
         const to = from + TRANSACTIONS_PER_PAGE - 1;
+        const { data, count } = await TransactionService.getTransactions(id, from, to);
 
-        const { data: pageTx, count } = await supabase
-          .from("Transaction")
-          .select(
-            `
-            *,
-            Tag:Tag_id (Name),
-            TxType:TxType_id (TxType)
-          `,
-            { count: "exact" }
-          )
-          .eq("Wallet_id", id)
-          .order("CreatedDate", { ascending: false })
-          .range(from, to);
-
-        setTransactions(pageTx || []);
-        if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setWalletName("Error Loading Wallet");
+        setTransactions(data);
+        setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
+      } catch (err) {
+        console.error(err);
+        setWalletInfo({ walletName: "Error Loading Wallet" });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchWallet();
   }, [id, currentPage]);
 
-  
+  if (!walletInfo) return <p className="text-center mt-10">Loading...</p>;
+
+  const {
+    walletName,
+    originalBudget: monthlyBudget = 0,
+    currentSpent = 0,
+    currentSaved = 0,
+    daysLeft = 0,
+    monthlyGoal = 0,
+    dailyBudget = 0,
+    dailyGoal = 0,
+  } = walletInfo;
+
+  const remainingBudget = monthlyBudget - currentSpent;
+  const remainingToGoal = monthlyGoal - currentSaved;
+  const currentBalance = monthlyBudget - currentSpent + currentSaved;
 
   return (
     <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
