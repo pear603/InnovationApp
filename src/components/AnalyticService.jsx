@@ -29,6 +29,35 @@ export const AnalyticService = {
     }));
   },
 
+  getWalletTransaction: async (walletId) => {
+    const { data, error } = await supabase
+      .from("Transaction")
+      .select(
+        `
+      Tx_id,
+      TxNote,
+      TxAmount,
+      Type:TxType_id ( TxType ),
+      Tag:Tag_id ( Name ),
+      CreatedDate,
+      Wallet_id
+    `
+      )
+      .eq("Wallet_id", walletId);
+
+    if (error) throw new Error(error.message);
+
+    return data.map((transaction) => ({
+      TxAmount: transaction.TxAmount,
+      TxType: transaction.Type || "Unknown",
+      Tag: transaction.Tag || "Other",
+      CreatedDate: transaction.CreatedDate,
+      TxNote: transaction.TxNote
+
+    }));
+    
+  },
+
   processTransactions: (transactions) => {
     const summary = {};
     transactions.forEach((tx) => {
@@ -41,23 +70,62 @@ export const AnalyticService = {
     return summary;
   },
   // transactions: array from AnalyticService.getTransaction(userId)
-  processBarData: (transactions) => {
-    const summary = AnalyticService.processTransactions(transactions);
+ processBarData: (transactions) => {
+  const summary = AnalyticService.processTransactions(transactions);
 
-    // get all unique tags
-    const allTags = [
-      ...new Set(Object.values(summary).flatMap((tags) => Object.keys(tags))),
-    ];
+  // get all unique tags across all types
+  const allTags = [
+    ...new Set(Object.values(summary).flatMap((tags) => Object.keys(tags))),
+  ];
 
-    const datasets = Object.keys(summary).map((type, idx) => ({
-      label: type, // "Income" or "Expense"
-      data: allTags.map((tag) => summary[type][tag] || 0),
-      backgroundColor: idx === 0 ? "#E16451" : "#9AD24B", // color per type 
-    }));
+  // Define color mapping per type
+  const typeColors = {
+    Income: "#9AD24B",  // green
+    Expense: "#E16451", // red
+    // add more types if needed
+  };
 
-    return {
-      labels: allTags,
-      datasets,
-    };
-  },
+  // Build datasets
+  const datasets = Object.keys(summary).map((type) => ({
+    label: type, // "Income" or "Expense"
+    data: allTags.map((tag) => summary[type][tag] || 0),
+    backgroundColor: typeColors[type] || "#36A2EB", // fallback color
+  }));
+
+  return {
+    labels: allTags,
+    datasets,
+  };
+},
+
+
+ processPieData: (transactions) => {
+  const summary = AnalyticService.processTransactions(transactions);
+
+  const labels = Object.keys(summary); // e.g., ["Income"] or ["Expense"]
+
+  // Sum all tags per type
+  const data = labels.map((type) =>
+    Object.values(summary[type]).reduce((total, value) => total + value, 0)
+  );
+
+  // Define color mapping per type
+  const typeColors = {
+    Income: "#9AD24B",  
+    Expense: "#E16451", 
+  };
+
+  const backgroundColor = labels.map((type) => typeColors[type] || "#36A2EB"); // default color if type not defined
+
+  return {
+    labels,
+    datasets: [
+      {
+        data,
+        backgroundColor,
+      },
+    ],
+  };
+}
+
 };
