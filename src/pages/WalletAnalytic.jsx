@@ -43,9 +43,12 @@ function WalletAnalytic() {
   const [transaction, setTransaction] = useState([]);
   const [pieData, setPieData] = useState(null);
     const [barData, setBarData] = useState(null);
+  const [loading, setLoading] = useState(true);
+   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -63,7 +66,7 @@ function WalletAnalytic() {
               data: Object.values(summary).map((tags) =>
                 Object.values(tags).reduce((a, b) => a + b, 0)
               ),
-              backgroundColor: ["#FF6384", "#36A2EB"], // colors
+              backgroundColor: ["#E16451", "#9AD24B"], // colors
             },
           ],
         };
@@ -134,14 +137,14 @@ function WalletAnalytic() {
             <div className="mt-5 ml-10 mb-10 text-2xl font-normal">
               Transaction History
             </div>
-            {/* {loading && <p className="text-center text-gray-500">Loading...</p>}
+            {loading && <p className="text-center text-gray-500">Loading...</p>}
             <div className="m-10">
-              {!loading && transactions.length === 0 ? (
+              {!loading && transaction.length === 0 ? (
                 <p className="text-center text-gray-500">
                   No transactions found
                 </p>
               ) : (
-                transactions.map((tx) => (
+                transaction.map((tx) => (
                   <Transaction key={tx.Tx_id} transaction={tx} />
                 ))
               )}
@@ -152,7 +155,7 @@ function WalletAnalytic() {
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
               />
-            )} */}
+            )}
           </div>
         </div>
       </div>

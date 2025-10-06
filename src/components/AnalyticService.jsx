@@ -6,9 +6,12 @@ export const AnalyticService = {
       .from("Transaction")
       .select(
         `
+      Tx_id,
+      TxNote,
       TxAmount,
       Type:TxType_id ( TxType ),
       Tag:Tag_id ( Name ),
+      CreatedDate,
       Wallet:Wallet_id ( User_id )
     `
       )
@@ -17,20 +20,23 @@ export const AnalyticService = {
     if (error) throw new Error(error.message);
 
     return data.map((transaction) => ({
-      amount: transaction.TxAmount,
-      type: transaction.Type?.TxType || "Unknown",
-      tag: transaction.Tag?.Name || "Other",
+      TxAmount: transaction.TxAmount,
+      TxType: transaction.Type || "Unknown",
+      Tag: transaction.Tag || "Other",
+      CreatedDate: transaction.CreatedDate,
+      TxNote: transaction.TxNote
+
     }));
   },
 
   processTransactions: (transactions) => {
     const summary = {};
     transactions.forEach((tx) => {
-      const type = tx.type;
-      const tag = tx.tag;
+      const type = tx.TxType?.TxType;
+      const tag = tx.Tag?.Name;
       if (!summary[type]) summary[type] = {};
       if (!summary[type][tag]) summary[type][tag] = 0;
-      summary[type][tag] += tx.amount;
+      summary[type][tag] += tx.TxAmount;
     });
     return summary;
   },
@@ -46,7 +52,7 @@ export const AnalyticService = {
     const datasets = Object.keys(summary).map((type, idx) => ({
       label: type, // "Income" or "Expense"
       data: allTags.map((tag) => summary[type][tag] || 0),
-      backgroundColor: idx === 0 ? "#36A2EB" : "#FF6384", // color per type
+      backgroundColor: idx === 0 ? "#E16451" : "#9AD24B", // color per type 
     }));
 
     return {
