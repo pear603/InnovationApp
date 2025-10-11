@@ -95,15 +95,25 @@ export const AnalyticService = {
     };
   },
 
-  processPieData: (transactions) => {
+  processPieData: (transactions, budget) => {
+    // summary per type (Income / Expense)
     const summary = AnalyticService.processTransactions(transactions);
 
-    const labels = Object.keys(summary); // e.g., ["Income"] or ["Expense"]
+    // Sum all income
+    const totalIncome = summary["Income"]
+      ? Object.values(summary["Income"]).reduce((sum, val) => sum + val, 0)
+      : 0;
 
-    // Sum all tags per type
-    const data = labels.map((type) =>
-      Object.values(summary[type]).reduce((total, value) => total + value, 0)
-    );
+    // Sum all expense
+    const totalExpense = summary["Expense"]
+      ? Object.values(summary["Expense"]).reduce((sum, val) => sum + val, 0)
+      : 0;
+
+    // Calculate remaining balance (budget minus expenses)
+    const remaining = Math.max(budget - totalExpense, 0);
+
+    const labels = ["Avaliable Balance", "Income", "Expense"];
+    const data = [remaining, totalIncome, totalExpense];
 
     // Define color mapping per type
     const typeColors = {
@@ -124,80 +134,132 @@ export const AnalyticService = {
     };
   },
 
-processAllBalance: async (userId) => {
-  try {
-    // 1️⃣ Fetch all wallets for this user
-    const { data: wallets, error: walletError } = await supabase
-      .from("Wallet")
-      .select("Wallet_id, WalletType, User_id")
-      .eq("User_id", userId);
+  processBudget: async (userId) => {
+    try {
+      // 1️⃣ Fetch all wallets for this user
+      const { data: wallets, error: walletError } = await supabase
+        .from("Wallet")
+        .select("Wallet_id, WalletType, User_id")
+        .eq("User_id", userId);
 
-    if (walletError) throw new Error(walletError.message);
+      if (walletError) throw new Error(walletError.message);
 
-    if (!wallets || wallets.length === 0) return 0;
+      if (!wallets || wallets.length === 0) return 0;
 
-    // Separate wallet IDs by type
-    const bothWalletIds = wallets
-      .filter((w) => w.WalletType?.toLowerCase() === "both")
-      .map((w) => w.Wallet_id);
+      // Separate wallet IDs by type
+      const bothWalletIds = wallets
+        .filter((w) => w.WalletType?.toLowerCase() === "both")
+        .map((w) => w.Wallet_id);
 
-    const expenseWalletIds = wallets
-      .filter((w) => w.WalletType?.toLowerCase() === "expense")
-      .map((w) => w.Wallet_id);
+      const expenseWalletIds = wallets
+        .filter((w) => w.WalletType?.toLowerCase() === "expense")
+        .map((w) => w.Wallet_id);
 
-    // 2️⃣ Fetch budgets for each relevant wallet type
-    const [bothRes, expenseRes] = await Promise.all([
-      bothWalletIds.length
-        ? supabase
-            .from("BothWallet")
-            .select("Wallet_id, Budget")
-            .in("Wallet_id", bothWalletIds)
-        : { data: [], error: null },
-      expenseWalletIds.length
-        ? supabase
-            .from("ExpenseWallet")
-            .select("Wallet_id, Budget")
-            .in("Wallet_id", expenseWalletIds)
-        : { data: [], error: null },
-    ]);
+      // 2️⃣ Fetch budgets for each relevant wallet type
+      const [bothRes, expenseRes] = await Promise.all([
+        bothWalletIds.length
+          ? supabase
+              .from("BothWallet")
+              .select("Wallet_id, Budget")
+              .in("Wallet_id", bothWalletIds)
+          : { data: [], error: null },
+        expenseWalletIds.length
+          ? supabase
+              .from("ExpenseWallet")
+              .select("Wallet_id, Budget")
+              .in("Wallet_id", expenseWalletIds)
+          : { data: [], error: null },
+      ]);
 
-    if (bothRes.error) throw new Error(bothRes.error.message);
-    if (expenseRes.error) throw new Error(expenseRes.error.message);
+      if (bothRes.error) throw new Error(bothRes.error.message);
+      if (expenseRes.error) throw new Error(expenseRes.error.message);
 
-    const bothWallets = bothRes.data || [];
-    const expenseWallets = expenseRes.data || [];
+      const bothWallets = bothRes.data || [];
+      const expenseWallets = expenseRes.data || [];
 
-    // 3️⃣ Combine all base budgets
-    const baseBalance = [...bothWallets, ...expenseWallets].reduce(
-      (sum, w) => sum + (Number(w.Budget) || 0),
-      0
-    );
+      // 3️⃣ Combine all base budgets
+      const baseBalance = [...bothWallets, ...expenseWallets].reduce(
+        (sum, w) => sum + (Number(w.Budget) || 0),
+        0
+      );
+      return baseBalance;
+    } catch (error) {
+      console.error("Error processing pie chart data:", error);
+    }
+  },
 
-    // 4️⃣ Fetch all transactions
-    const allTx = await AnalyticService.getTransaction(userId);
+  processAllBalance: async (userId) => {
+    try {
+      // 1️⃣ Fetch all wallets for this user
+      const { data: wallets, error: walletError } = await supabase
+        .from("Wallet")
+        .select("Wallet_id, WalletType, User_id")
+        .eq("User_id", userId);
 
-    // 5️⃣ Compute transaction-based balance
-    const transactionSum = (allTx || []).reduce((sum, tx) => {
-      const type = tx.TxType?.TxType || "";
-      const amount = Number(tx.TxAmount) || 0;
+      if (walletError) throw new Error(walletError.message);
 
-      if (type === "Income") return sum + amount;
-      if (type === "Expense") return sum - amount;
+      if (!wallets || wallets.length === 0) return 0;
 
-      return sum;
-    }, 0);
+      // Separate wallet IDs by type
+      const bothWalletIds = wallets
+        .filter((w) => w.WalletType?.toLowerCase() === "both")
+        .map((w) => w.Wallet_id);
 
-    // 6️⃣ Final total balance
-    const totalBalance = baseBalance + transactionSum;
+      const expenseWalletIds = wallets
+        .filter((w) => w.WalletType?.toLowerCase() === "expense")
+        .map((w) => w.Wallet_id);
 
-    return totalBalance;
+      // 2️⃣ Fetch budgets for each relevant wallet type
+      const [bothRes, expenseRes] = await Promise.all([
+        bothWalletIds.length
+          ? supabase
+              .from("BothWallet")
+              .select("Wallet_id, Budget")
+              .in("Wallet_id", bothWalletIds)
+          : { data: [], error: null },
+        expenseWalletIds.length
+          ? supabase
+              .from("ExpenseWallet")
+              .select("Wallet_id, Budget")
+              .in("Wallet_id", expenseWalletIds)
+          : { data: [], error: null },
+      ]);
 
-  } catch (error) {
-    console.error("Error processing total balance:", error);
-    return { baseBalance: 0, transactionSum: 0, totalBalance: 0 };
-  }
-},
+      if (bothRes.error) throw new Error(bothRes.error.message);
+      if (expenseRes.error) throw new Error(expenseRes.error.message);
 
+      const bothWallets = bothRes.data || [];
+      const expenseWallets = expenseRes.data || [];
+
+      // 3️⃣ Combine all base budgets
+      const baseBalance = [...bothWallets, ...expenseWallets].reduce(
+        (sum, w) => sum + (Number(w.Budget) || 0),
+        0
+      );
+
+      // 4️⃣ Fetch all transactions
+      const allTx = await AnalyticService.getTransaction(userId);
+
+      // 5️⃣ Compute transaction-based balance
+      const transactionSum = (allTx || []).reduce((sum, tx) => {
+        const type = tx.TxType?.TxType || "";
+        const amount = Number(tx.TxAmount) || 0;
+
+        if (type === "Income") return sum + amount;
+        if (type === "Expense") return sum - amount;
+
+        return sum;
+      }, 0);
+
+      // 6️⃣ Final total balance
+      const totalBalance = baseBalance + transactionSum;
+
+      return totalBalance;
+    } catch (error) {
+      console.error("Error processing total balance:", error);
+      return { baseBalance: 0, transactionSum: 0, totalBalance: 0 };
+    }
+  },
 
   countUserWallets: async (userId) => {
     const { count, error } = await supabase
@@ -213,105 +275,115 @@ processAllBalance: async (userId) => {
     return count || 0;
   },
 
- archivedWallet: async (userId) => {
-  try {
-    // 1️⃣ Get all wallets for this user
-    const { data: wallets, error: walletError } = await supabase
-      .from("Wallet")
-      .select("Wallet_id, WalletType, User_id")
-      .eq("User_id", userId);
+  archivedWallet: async (userId) => {
+    try {
+      // 1️⃣ Get all wallets for this user
+      const { data: wallets, error: walletError } = await supabase
+        .from("Wallet")
+        .select("Wallet_id, WalletType, User_id")
+        .eq("User_id", userId);
 
-    if (walletError) throw new Error(walletError.message);
-    if (!wallets.length) return 0;
+      if (walletError) throw new Error(walletError.message);
+      if (!wallets.length) return 0;
 
-    // 2️⃣ Split wallets by type
-    const bothWalletIds = wallets
-      .filter((w) => w.WalletType?.toLowerCase() === "both")
-      .map((w) => w.Wallet_id);
+      // 2️⃣ Split wallets by type
+      const bothWalletIds = wallets
+        .filter((w) => w.WalletType?.toLowerCase() === "both")
+        .map((w) => w.Wallet_id);
 
-    const expenseWalletIds = wallets
-      .filter((w) => w.WalletType?.toLowerCase() === "expense")
-      .map((w) => w.Wallet_id);
+      const expenseWalletIds = wallets
+        .filter((w) => w.WalletType?.toLowerCase() === "expense")
+        .map((w) => w.Wallet_id);
 
-    const incomeWalletIds = wallets
-      .filter((w) => w.WalletType?.toLowerCase() === "income")
-      .map((w) => w.Wallet_id);
+      const incomeWalletIds = wallets
+        .filter((w) => w.WalletType?.toLowerCase() === "income")
+        .map((w) => w.Wallet_id);
 
-    // 3️⃣ Fetch budgets/goals for each type
-    const [bothRes, expenseRes, incomeRes] = await Promise.all([
-      bothWalletIds.length
-        ? supabase.from("BothWallet").select("Wallet_id, Budget, Goal").in("Wallet_id", bothWalletIds)
-        : { data: [] },
-      expenseWalletIds.length
-        ? supabase.from("ExpenseWallet").select("Wallet_id, Budget").in("Wallet_id", expenseWalletIds)
-        : { data: [] },
-      incomeWalletIds.length
-        ? supabase.from("IncomeWallet").select("Wallet_id, Goal").in("Wallet_id", incomeWalletIds)
-        : { data: [] },
-    ]);
+      // 3️⃣ Fetch budgets/goals for each type
+      const [bothRes, expenseRes, incomeRes] = await Promise.all([
+        bothWalletIds.length
+          ? supabase
+              .from("BothWallet")
+              .select("Wallet_id, Budget, Goal")
+              .in("Wallet_id", bothWalletIds)
+          : { data: [] },
+        expenseWalletIds.length
+          ? supabase
+              .from("ExpenseWallet")
+              .select("Wallet_id, Budget")
+              .in("Wallet_id", expenseWalletIds)
+          : { data: [] },
+        incomeWalletIds.length
+          ? supabase
+              .from("IncomeWallet")
+              .select("Wallet_id, Goal")
+              .in("Wallet_id", incomeWalletIds)
+          : { data: [] },
+      ]);
 
-    const bothWallets = bothRes.data || [];
-    const expenseWallets = expenseRes.data || [];
-    const incomeWallets = incomeRes.data || [];
+      const bothWallets = bothRes.data || [];
+      const expenseWallets = expenseRes.data || [];
+      const incomeWallets = incomeRes.data || [];
 
-    // 4️⃣ Fetch all transactions for these wallets
-    const allWalletIds = [...bothWalletIds, ...expenseWalletIds, ...incomeWalletIds];
-    const { data: transactions, error: txError } = await supabase
-      .from("Transaction")
-      .select("Wallet_id, TxAmount, TxType (TxType)")
-      .in("Wallet_id", allWalletIds);
+      // 4️⃣ Fetch all transactions for these wallets
+      const allWalletIds = [
+        ...bothWalletIds,
+        ...expenseWalletIds,
+        ...incomeWalletIds,
+      ];
+      const { data: transactions, error: txError } = await supabase
+        .from("Transaction")
+        .select("Wallet_id, TxAmount, TxType (TxType)")
+        .in("Wallet_id", allWalletIds);
 
-    if (txError) throw new Error(txError.message);
+      if (txError) throw new Error(txError.message);
 
-    // 5️⃣ Group transactions by wallet
-    const txByWallet = {};
-    transactions.forEach((tx) => {
-      if (!txByWallet[tx.Wallet_id]) txByWallet[tx.Wallet_id] = [];
-      txByWallet[tx.Wallet_id].push(tx);
-    });
+      // 5️⃣ Group transactions by wallet
+      const txByWallet = {};
+      transactions.forEach((tx) => {
+        if (!txByWallet[tx.Wallet_id]) txByWallet[tx.Wallet_id] = [];
+        txByWallet[tx.Wallet_id].push(tx);
+      });
 
-    // 6️⃣ Count how many wallets are archived
-    let archivedCount = 0;
+      // 6️⃣ Count how many wallets are archived
+      let archivedCount = 0;
 
-    // --- Income wallets ---
-    for (const w of incomeWallets) {
-      const walletTx = txByWallet[w.Wallet_id] || [];
-      const incomeSum = walletTx
-        .filter((tx) => tx.TxType?.TxType === "Income")
-        .reduce((sum, tx) => sum + tx.TxAmount, 0);
-      if (incomeSum >= w.Goal) archivedCount++;
+      // --- Income wallets ---
+      for (const w of incomeWallets) {
+        const walletTx = txByWallet[w.Wallet_id] || [];
+        const incomeSum = walletTx
+          .filter((tx) => tx.TxType?.TxType === "Income")
+          .reduce((sum, tx) => sum + tx.TxAmount, 0);
+        if (incomeSum >= w.Goal) archivedCount++;
+      }
+
+      // --- Expense wallets ---
+      for (const w of expenseWallets) {
+        const walletTx = txByWallet[w.Wallet_id] || [];
+        const expenseSum = walletTx
+          .filter((tx) => tx.TxType?.TxType === "Expense")
+          .reduce((sum, tx) => sum + tx.TxAmount, 0);
+        if (expenseSum < w.Budget) archivedCount++;
+      }
+
+      // --- Both wallets ---
+      for (const w of bothWallets) {
+        const walletTx = txByWallet[w.Wallet_id] || [];
+        const incomeSum = walletTx
+          .filter((tx) => tx.TxType?.TxType === "Income")
+          .reduce((sum, tx) => sum + tx.TxAmount, 0);
+        const expenseSum = walletTx
+          .filter((tx) => tx.TxType?.TxType === "Expense")
+          .reduce((sum, tx) => sum + tx.TxAmount, 0);
+
+        if (incomeSum >= w.Goal && expenseSum < w.Budget) archivedCount++;
+      }
+
+      // ✅ Return the total number of archived wallets
+      return archivedCount;
+    } catch (error) {
+      console.error("Error checking archived wallets:", error.message);
+      return 0;
     }
-
-    // --- Expense wallets ---
-    for (const w of expenseWallets) {
-      const walletTx = txByWallet[w.Wallet_id] || [];
-      const expenseSum = walletTx
-        .filter((tx) => tx.TxType?.TxType === "Expense")
-        .reduce((sum, tx) => sum + tx.TxAmount, 0);
-      if (expenseSum < w.Budget) archivedCount++;
-    }
-
-    // --- Both wallets ---
-    for (const w of bothWallets) {
-      const walletTx = txByWallet[w.Wallet_id] || [];
-      const incomeSum = walletTx
-        .filter((tx) => tx.TxType?.TxType === "Income")
-        .reduce((sum, tx) => sum + tx.TxAmount, 0);
-      const expenseSum = walletTx
-        .filter((tx) => tx.TxType?.TxType === "Expense")
-        .reduce((sum, tx) => sum + tx.TxAmount, 0);
-
-      if (incomeSum >= w.Goal && expenseSum < w.Budget) archivedCount++;
-    }
-
-    // ✅ Return the total number of archived wallets
-    return archivedCount;
-
-  } catch (error) {
-    console.error("Error checking archived wallets:", error.message);
-    return 0;
-  }
-},
-
-
+  },
 };

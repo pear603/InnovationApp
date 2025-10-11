@@ -44,6 +44,7 @@ function WalletAnalytic() {
   const [balance, setBalance] = useState(0);
   const [count, setCount] = useState(0);
   const [archived, setArchived] = useState(0);
+  const [budget, setBudget] = useState(0);
   const [pieData, setPieData] = useState(null);
   const [barData, setBarData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -73,12 +74,15 @@ function WalletAnalytic() {
           const archived = AnalyticService.archivedWallet(user.id);
           setArchived(archived);
 
+          const budget = await AnalyticService.processBudget(user.id);
+          setBudget(budget);
+
           setTotalPages(
             Math.ceil(transactionData.length / TRANSACTIONS_PER_PAGE)
           );
 
           // const summary = AnalyticService.processTransactions(transactionData);
-          const chartData = AnalyticService.processPieData(transactionData);
+          const chartData = AnalyticService.processPieData(transactionData , budget);
           setPieData(chartData);
           const barChartData = AnalyticService.processBarData(transactionData);
           setBarData(barChartData);
