@@ -14,15 +14,15 @@ import PieChart from "../components/Piechart";
 import BarChart from "../components/BarChart";
 import { AnalyticService } from "../components/AnalyticService";
 import { Pie } from "react-chartjs-2";
-import { Bar }from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
-  CategoryScale,  // <-- for x-axis of bar chart
-  LinearScale,    // <-- for y-axis of bar chart
-  BarElement      // <-- for the bars themselves
+  CategoryScale, // <-- for x-axis of bar chart
+  LinearScale, // <-- for y-axis of bar chart
+  BarElement, // <-- for the bars themselves
 } from "chart.js";
 
 ChartJS.register(
@@ -41,10 +41,17 @@ function WalletAnalytic() {
 
   const [user, setUser] = useState(null);
   const [transaction, setTransaction] = useState([]);
+  const [balance, setBalance] = useState(0);
+  const [count, setCount] = useState(0);
+  const [archived, setArchived] = useState(0);
+  const [budget, setBudget] = useState(0);
   const [pieData, setPieData] = useState(null);
-    const [barData, setBarData] = useState(null);
+  const [barData, setBarData] = useState(null);
   const [loading, setLoading] = useState(false);
-   const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const TRANSACTIONS_PER_PAGE = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,40 +61,45 @@ function WalletAnalytic() {
       } = await supabase.auth.getUser();
       setUser(user);
       try {
-      if (user) {
-        const transactionData = await AnalyticService.getTransaction(user.id);
-        setTransaction(transactionData);
+        if (user) {
+          const transactionData = await AnalyticService.getTransaction(user.id);
+          setTransaction(transactionData);
 
-        const summary = AnalyticService.processTransactions(transactionData);
-        const chartData = {
-          labels: Object.keys(summary), // e.g. ["Expense", "Income"]
-          datasets: [
-            {
-              data: Object.values(summary).map((tags) =>
-                Object.values(tags).reduce((a, b) => a + b, 0)
-              ),
-              backgroundColor: ["#E16451", "#9AD24B"], // colors
-            },
-          ],
-        };
+          const balance = AnalyticService.processAllBalance(user.id);
+          setBalance(balance);
 
-        setPieData(chartData);
+          const count = AnalyticService.countUserWallets(user.id);
+          setCount(count);
 
-        
-        const barChartData = AnalyticService.processBarData(transactionData);
+          const archived = AnalyticService.archivedWallet(user.id);
+          setArchived(archived);
 
-        setBarData(barChartData);
+          const budget = await AnalyticService.processBudget(user.id);
+          setBudget(budget);
 
+          setTotalPages(
+            Math.ceil(transactionData.length / TRANSACTIONS_PER_PAGE)
+          );
+
+          // const summary = AnalyticService.processTransactions(transactionData);
+          const chartData = AnalyticService.processPieData(transactionData , budget);
+          setPieData(chartData);
+          const barChartData = AnalyticService.processBarData(transactionData);
+          setBarData(barChartData);
+        }
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-    } finally {
-      setLoading(false);
-    }
     };
 
     fetchData();
   }, []);
+
+  const indexOfLast = currentPage * TRANSACTIONS_PER_PAGE;
+  const indexOfFirst = indexOfLast - TRANSACTIONS_PER_PAGE;
+  const currentTransactions = transaction.slice(indexOfFirst, indexOfLast);
 
   return (
     <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
@@ -109,11 +121,9 @@ function WalletAnalytic() {
 
               <div className="flex flex-col sm:flex-row md:flex-row gap-5">
                 <div className="w-full md:w-1/2 h-[291px]">
-                  <PieStats>
-                    <div>
-                      <PieChart data={pieData} />
-                    </div>
-                  </PieStats>
+                  <div className="flex flex-col items-center justify-center w-full h-[291px] box-content  rounded-[9px] bg-gray-100 border border-black/10">
+                    <PieChart data={pieData} />
+                  </div>
 
                   {/* <PieChart/> */}
                 </div>
@@ -132,7 +142,7 @@ function WalletAnalytic() {
             <div className="gap-[10px] flex flex-col ">
               <div className="w-full flex justify-center flex-1 ">
                 <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
-                  <BalanceLeft />
+                  <BalanceLeft variant={"Analytic"} balance={balance} walletNum={count} archived={archived}/>
                 </div>
               </div>
             </div>
@@ -144,12 +154,12 @@ function WalletAnalytic() {
             </div>
             {loading && <p className="text-center text-gray-500">Loading...</p>}
             <div className="m-10">
-              {!loading && transaction.length === 0 ? (
+              {!loading && currentTransactions.length === 0 ? (
                 <p className="text-center text-gray-500">
                   No transactions found
                 </p>
               ) : (
-                transaction.map((tx) => (
+                currentTransactions.map((tx) => (
                   <Transaction key={tx.Tx_id} transaction={tx} />
                 ))
               )}
