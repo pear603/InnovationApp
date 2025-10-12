@@ -11,6 +11,9 @@ import Insert from "../components/Ohma/Insert";
 import Transaction from "../components/Ohma/Transaction";
 import BalanceLeft from "../components/BalanceLeft";
 import Pagination from "../components/Ohma/Pagination";
+import { AnalyticService } from "../components/AnalyticService";
+import ProgressChart from "../components/ProgressChart";
+import BarChart from "../components/BarChart";
 
 function BothWalletDetails() {
   const navigate = useNavigate();
@@ -21,6 +24,10 @@ function BothWalletDetails() {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [incomeProgress, setIncomeProgress] = useState(null);
+  const [expenseProgress, setExpenseProgress] = useState(null);
+  const [barData, setBarData] = useState(null);
+
 
   const TRANSACTIONS_PER_PAGE = 10;
 
@@ -35,8 +42,16 @@ function BothWalletDetails() {
         const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
         const to = from + TRANSACTIONS_PER_PAGE - 1;
         const { data, count } = await TransactionService.getTransactions(id, from, to);
-
         setTransactions(data);
+
+        const income = AnalyticService.processIncomeProgress(info, data);
+        const expense = AnalyticService.processExpenseProgress(info, data);
+        setIncomeProgress(income);
+        setExpenseProgress(expense);
+
+        const barChartData = AnalyticService.processBarData(data);
+        setBarData(barChartData);
+
         setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
       } catch (err) {
         console.error(err);
@@ -78,36 +93,6 @@ function BothWalletDetails() {
           <div className="gap-4 flex flex-col flex-1">
             {/*group left*/}
 
-            {/* Overview */}
-            {/* <div className="w-[739px] bg-white rounded-[10px] p-6 shadow-lg">
-          <div className="text-[28px] font-bold mb-4">Wallet Overview</div>
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div>
-              <div className="text-[20px] font-semibold text-red-600 mb-2">Expense Tracking</div>
-              <BudgetItem label="Original Budget" value={`$${originalBudget.toLocaleString()}`} />
-              <BudgetItem label="Total Spent" value={`$${currentSpent.toFixed(2)}`} className="text-red-600" />
-              <BudgetItem label="Remaining" value={`$${remainingBudget.toFixed(2)}`} className="text-green-600" />
-              <BudgetItem label="Daily Budget" value={`$${dailyBudget.toFixed(2)}`} className="text-purple-600" />
-            </div>
-            <div>
-              <div className="text-[20px] font-semibold text-green-600 mb-2">Income Tracking</div>
-              <BudgetItem label="Monthly Goal" value={`$${monthlyGoal.toLocaleString()}`} />
-              <BudgetItem label="Currently Saved" value={`$${currentSaved.toFixed(2)}`} className="text-green-600" />
-              <BudgetItem label="Remaining to Goal" value={`$${remainingToGoal.toFixed(2)}`} className="text-blue-600" />
-              <BudgetItem label="Daily Goal" value={`$${dailyGoal.toFixed(2)}`} className="text-purple-600" />
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center">
-              <span className="text-[22px] font-bold text-gray-800">Current Balance:</span>
-              <span className={`text-[28px] font-bold ${currentBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                ${currentBalance.toFixed(2)}
-              </span>
-            </div>
-            <div className="text-sm text-gray-600 mt-1">Days Left: {daysLeft} days</div>
-          </div>
-        </div> */}
             <div className="w-full gap-[10px] flex flex-col ">
               <div className="w-full flex justify-center flex-1 ">
               <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
@@ -136,9 +121,20 @@ function BothWalletDetails() {
             <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
               <div className=" text-[24px] font-normal">Statistics</div>
 
-              <div className="flex flex-col sm:flex-row md:flex-row gap-5">
-                <div className="w-full md:w-1/2 h-[291px]">
-                  <PieStats />
+              <div className="flex flex-col flex-wrap sm:flex-row md:flex-row gap-5">
+          
+                <div className="flex flex-col flex-1 w-full md:w-1/2 gap-6 items-center justify-center bg-gray-100 p-4 rounded-[9px] border border-black/10">
+                  {/* Income Progress */}
+                  <div className="flex flex-col items-center justify-center">
+                    {incomeProgress && <ProgressChart progressData={incomeProgress} />}
+                    <span className="text-green-600 font-medium mt-2">Income Progress</span>
+                  </div>
+
+                  {/* Expense Progress */}
+                  <div className="flex flex-col items-center justify-center">
+                    {expenseProgress && <ProgressChart progressData={expenseProgress} />}
+                    <span className="text-red-600 font-medium mt-2">Expense Progress</span>
+                  </div>
                 </div>
 
                 <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
@@ -147,8 +143,8 @@ function BothWalletDetails() {
                 </div>
               </div>
 
-              <div className="w-full h-[230px] justify-items-center">
-                <BarGraph walletId={id} />
+              <div className="w-full h-[230px] justify-items-center box-content  rounded-[9px] bg-gray-100 border border-black/10">
+                <BarChart data={barData} />
               </div>
             </div>
           </div>
@@ -185,13 +181,5 @@ function BothWalletDetails() {
   );
 }
 
-function BudgetItem({ label, value, className = "" }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-gray-600">{label}:</span>
-      <span className={`font-semibold ${className}`}>{value}</span>
-    </div>
-  );
-}
 
 export default BothWalletDetails;

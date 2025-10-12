@@ -4,11 +4,11 @@ import { Doughnut } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 Chart.register(ArcElement, Tooltip, Legend);
 
-const ProgressChart = ({ progressData }) => {
+const ProgressChart = ({ progressData, variant}) => {
   if (!progressData?.chartData) return <p>No data available</p>;
 
   return (
-    <div className="w-64 h-64 relative flex items-center justify-center">
+    <div className="w-full h-full relative flex items-center justify-center">
       <Doughnut
         data={progressData.chartData}
         options={{
@@ -17,6 +17,8 @@ const ProgressChart = ({ progressData }) => {
             legend: { display: false },
             tooltip: { enabled: true },
           },
+        responsive: true,
+        maintainAspectRatio: false, // important to fill parent div
         }}
       />
       <div className="absolute text-center">

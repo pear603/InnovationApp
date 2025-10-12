@@ -404,7 +404,7 @@ export const AnalyticService = {
       datasets: [
         {
           data: [progress, 100 - progress],
-          backgroundColor: ["#4CAF50", "#E0E0E0"], // green + gray
+          backgroundColor: ["#9AD24B", "#E0E0E0"], // green + gray
           borderWidth: 0,
         },
       ],
@@ -426,6 +426,7 @@ export const AnalyticService = {
         {
           data: [spent, Math.max(budget - spent, 0)],
           backgroundColor: ["#E16451", "#E0E0E0"], // red for spent, green for remaining
+          borderWidth: 0,
         },
       ],
     };

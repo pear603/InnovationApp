@@ -88,16 +88,6 @@ function ExpenseWalletDetails() {
           <div className="gap-4 flex flex-col flex-1">
             {/*group left*/}
 
-            {/* Overview */}
-            {/* <Overview
-          monthlyBudget={monthlyBudget}
-          totalSpent={totalSpent}
-          remainingBudget={remainingBudget}
-          daysLeft={daysLeft}
-          dailyLimit={dailyLimit}
-          currentBalance={currentBalance}
-        /> */}
-
             <div className="gap-[10px] flex flex-col">
               <div className="w-full min-w-[739px] h-[197px] ">
                 <BalanceLeft
@@ -118,21 +108,21 @@ function ExpenseWalletDetails() {
             <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
               <div className=" text-[24px] font-normal">Statistics</div>
 
-              <div className="flex flex-col sm:flex-row md:flex-row gap-5">
-                <div className="w-full md:w-1/2 h-[291px]">
-                  <div className="flex flex-col items-center justify-center w-full h-[291px] box-content  rounded-[9px] bg-gray-100 border border-black/10">
-                    {/* <PieChart data={pieData} /> */}
-                    <ProgressChart progressData={progressData} />
+              <div className="flex flex-col sm:flex-row md:flex-row gap-5 flex-wrap">
+                <div className="w-full md:w-1/2 h-[291px] flex-1">
+                  <div className="flex flex-col flex-1 items-center justify-center w-full h-[291px] box-content rounded-[9px] bg-gray-100 border border-black/10">
+                  <div className="w-full h-full p-4 flex items-center justify-center">
+                    <ProgressChart progressData={progressData} /></div>
                   </div>
                 </div>
 
-                <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
+                <div className="w-full md:w-1/2 flex-1 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
                   <GoodToKnow totalspent={totalSpent} remainbudget={remainingBudget} variant="Expense" />
                   <SuggestionBox walletId={id} />
                 </div>
               </div>
 
-              <div className="w-full h-[230px] justify-items-center">
+              <div className="w-full h-[230px] justify-items-center box-content  rounded-[9px] bg-gray-100 border border-black/10">
                 <BarChart data={barData} />
               </div>
             </div>
