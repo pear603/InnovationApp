@@ -4,12 +4,9 @@ import { TransactionService } from "../components/TransactionService";
 import ExpenseBtn from "../components/ExpenseBtn";
 import Transaction from "../components/Ohma/Transaction";
 import Pagination from "../components/Ohma/Pagination";
-import PieStats from "../components/Ohma/PieStats";
-import BarGraph from "../components/Ohma/BarGraph";
 import GoodToKnow from "../components/Ohma/GoodToKnow";
 import SuggestionBox from "../components/Ohma/SuggestionBox";
 import "../tailwind.css";
-import BalanceLeftIncome from "../components/BalanceLeftIncome";
 import { AnalyticService } from "../components/AnalyticService";
 import ProgressChart from "../components/ProgressChart";
 import BarChart from "../components/BarChart";
@@ -112,13 +109,13 @@ function ExpenseWalletDetails() {
                 <div className="w-full md:w-1/2 h-[291px] flex-1">
                   <div className="flex flex-col flex-1 items-center justify-center w-full h-[291px] box-content rounded-[9px] bg-gray-100 border border-black/10">
                   <div className="w-full h-full p-4 flex items-center justify-center">
-                    <ProgressChart progressData={progressData} /></div>
+                    <ProgressChart progressData={progressData} variant="expense"/></div>
                   </div>
                 </div>
 
                 <div className="w-full md:w-1/2 flex-1 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
                   <GoodToKnow totalspent={totalSpent} remainbudget={remainingBudget} variant="Expense" />
-                  <SuggestionBox walletId={id} />
+                  <SuggestionBox totalspent={totalSpent} remainbudget={remainingBudget} dailylimit={dailyLimit} variant="expense"/>
                 </div>
               </div>
 

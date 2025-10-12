@@ -36,7 +36,6 @@ ChartJS.register(
 import "../tailwind.css";
 
 function WalletAnalytic() {
-  const navigate = useNavigate();
   const { id } = useParams();
 
   const [user, setUser] = useState(null);
@@ -50,6 +49,12 @@ function WalletAnalytic() {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [suggestions, setSuggestions] = useState([]);
+  const [walletSummary, setWalletSummary] = useState({
+  totalSpent: 0,
+  totalSaved: 0,
+  avgTx: 0,
+});
 
   const TRANSACTIONS_PER_PAGE = 10;
 
@@ -86,6 +91,19 @@ function WalletAnalytic() {
           setPieData(chartData);
           const barChartData = AnalyticService.processBarData(transactionData);
           setBarData(barChartData);
+
+          const summary = AnalyticService.processWalletSummary(transactionData);
+          setWalletSummary(summary)
+          const newSuggestions = [];
+          if (summary.totalSpent > summary.totalSaved) {
+            newSuggestions.push("Try to reduce your spending next month.");
+          } else if (summary.totalSpent < summary.totalSaved) {
+            newSuggestions.push("Great job! You're saving more than you spend!");
+          } else {
+            newSuggestions.push("You’re doing okay! Keep tracking your balance.");
+          }
+
+          setSuggestions(newSuggestions);
         }
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -100,6 +118,7 @@ function WalletAnalytic() {
   const indexOfLast = currentPage * TRANSACTIONS_PER_PAGE;
   const indexOfFirst = indexOfLast - TRANSACTIONS_PER_PAGE;
   const currentTransactions = transaction.slice(indexOfFirst, indexOfLast);
+
 
   return (
     <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
@@ -130,8 +149,8 @@ function WalletAnalytic() {
               <div className=" text-[24px] font-normal">Statistics</div>
 
               
-              <div className="flex flex-col sm:flex-row md:flex-row gap-5">
-                <div className="w-full md:w-1/2 h-[291px]">
+              <div className="flex flex-col sm:flex-row md:flex-row gap-5 flex-warp">
+                <div className="w-full md:w-1/2 h-[291px] flex-1">
                   <div className="flex flex-col items-center justify-center w-full h-[291px] box-content  rounded-[9px] bg-gray-100 border border-black/10">
                     <PieChart data={pieData} />
                   </div>
@@ -139,24 +158,17 @@ function WalletAnalytic() {
                   {/* <PieChart/> */}
                 </div>
 
-                <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
-                  <GoodToKnow />
-                  <SuggestionBox walletId={id} />
+                <div className="w-full md:w-1/2 flex flex-1 flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
+                  <GoodToKnow sum = {walletSummary} variant="Analytic"/>
+                  <SuggestionBox msg = {suggestions} variant="Analytic" />
                 </div>
               </div>
 
-              <div className="w-full h-[230px] justify-items-center">
+              <div className="w-full h-[230px] justify-items-center box-content  rounded-[9px] bg-gray-100 border border-black/10">
                 <BarChart data={barData} />
               </div>
             </div>
 
-            {/* <div className="gap-[10px] flex flex-col ">
-              <div className="w-full flex justify-center flex-1 ">
-                <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
-                  <BalanceLeft variant={"Analytic"} balance={balance} walletNum={count} archived={archived}/>
-                </div>
-              </div>
-            </div> */}
           </div>
           {/* Fixed Transaction Area */}
           <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">

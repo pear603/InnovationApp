@@ -387,32 +387,59 @@ export const AnalyticService = {
     }
   },
 
+  // processIncomeProgress(walletInfo, transactions) {
+  //   if (!walletInfo) return console.log("No walletInfo");
+
+  //   const { monthlyGoal = 0, currentSaved = 0 } = walletInfo;
+  //   const totalIncome = transactions
+  //     .filter((t) => t.type === "income")
+  //     .reduce((sum, t) => sum + t.amount, 0);
+
+  //   const progress = monthlyGoal
+  //     ? Math.min(((currentSaved + totalIncome) / monthlyGoal) * 100, 100)
+  //     : 0;
+
+  //   const chartData = {
+  //     labels: ["Achieved", "Remaining"],
+  //     datasets: [
+  //       {
+  //         data: [progress, 100 - progress],
+  //         backgroundColor: ["#9AD24B", "#E0E0E0"], // green + gray
+  //         borderWidth: 0,
+  //       },
+  //     ],
+  //   };
+
+  //   return { progress, chartData };
+  // },
+
   processIncomeProgress(walletInfo, transactions) {
-    if (!walletInfo) return console.log("No walletInfo");
+  if (!walletInfo) return console.log("No walletInfo");
 
-    const { monthlyGoal = 0, currentSaved = 0 } = walletInfo;
-    const totalIncome = transactions
-      .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + t.amount, 0);
+  const { monthlyGoal = 0, currentSaved = 0 } = walletInfo;
+  const totalIncome = transactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
 
-    const progress = monthlyGoal
-      ? Math.min(((currentSaved + totalIncome) / monthlyGoal) * 100, 100)
-      : 0;
+  const achievedAmount = currentSaved + totalIncome;
+  const remainingAmount = Math.max(monthlyGoal - achievedAmount, 0);
+  const progressPercent = monthlyGoal ? Math.min((achievedAmount / monthlyGoal) * 100, 100) : 0;
 
-    const chartData = {
-      labels: ["Achieved", "Remaining"],
-      datasets: [
-        {
-          data: [progress, 100 - progress],
-          backgroundColor: ["#9AD24B", "#E0E0E0"], // green + gray
-          borderWidth: 0,
-        },
-      ],
-    };
+  const chartData = {
+    labels: ["Achieved", "Remaining"],
+    datasets: [
+      {
+        data: [achievedAmount, remainingAmount], // ✅ actual amounts here
+        backgroundColor: ["#9AD24B", "#E0E0E0"],
+        borderWidth: 0,
+      },
+    ],
+  };
 
-    return { progress, chartData };
-  },
-// AnalyticService.js
+  return { progress: progressPercent, chartData };
+},
+
+
   processExpenseProgress(walletInfo, transactions) {
     if (!walletInfo) return null;
 
@@ -435,7 +462,24 @@ export const AnalyticService = {
       progress: progressPercent,
       chartData,
     };
-  }
+  },
+
+  processWalletSummary: (transactions) => {
+  const totalSpent = transactions
+    .filter(tx => tx.TxType?.TxType === "Expense")
+    .reduce((sum, tx) => sum + tx.TxAmount, 0);
+
+  const totalSaved = transactions
+    .filter(tx => tx.TxType?.TxType === "Income")
+    .reduce((sum, tx) => sum + tx.TxAmount, 0);
+
+  const avgTx = transactions.length ? 
+    (transactions.reduce((sum, tx) => sum + Math.abs(tx.TxAmount), 0) / transactions.length) 
+    : 0;
+
+  return { totalSpent, totalSaved, avgTx };
+}
+
 
 
 };

@@ -1,6 +1,6 @@
 import "../../tailwind.css";
 import { Link } from "react-router-dom";
-function GoodToKnow({totalspent, remainbudget, totalsave, remaingoal , variant}) {
+function GoodToKnow({totalspent, remainbudget, totalsave, remaingoal , variant, sum}) {
     return (
     <>
     <div className="relative w-full h-auto">
@@ -35,6 +35,19 @@ function GoodToKnow({totalspent, remainbudget, totalsave, remaingoal , variant})
       </p>
       <p className="text-gray-700">
         You have <strong>{remainbudget} ฿</strong> left to stick to your budget
+      </p>
+        </div>)}
+
+        {variant === "Analytic"&&(
+        <div className="text-[18px] pl-[24px] pt-[2px] pr-[20px] pb-[20px] tracking-tight leading-snug">
+          <p className="text-gray-700">
+        You have spent <strong>{sum.totalSpent} ฿</strong>.
+      </p>
+      <p className="text-gray-700">
+        You have saved <strong>{sum.totalSaved} ฿</strong> in total.
+      </p>
+      <p className="text-gray-700">
+        Average transaction: <strong>{sum.avgTx.toFixed(1)} ฿</strong>.
       </p>
         </div>)}
 

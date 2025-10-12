@@ -23,7 +23,7 @@ const ProgressChart = ({ progressData, variant}) => {
       />
       <div className="absolute text-center">
         <p className="text-lg font-semibold">{progressData.progress.toFixed(1)}%</p>
-        <p className="text-sm text-gray-500">of goal</p>
+        <p className="text-sm text-gray-500">{variant === "income" ? "of goal" : variant === "expense" ? "of budget" : "of goal"}</p>
       </div>
     </div>
   );

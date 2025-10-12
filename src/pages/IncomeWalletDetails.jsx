@@ -2,8 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { TransactionService } from "../components/TransactionService";
 import Insert from "../components/Ohma/Insert";
-import PieStats from "../components/Ohma/PieStats";
-import BarGraph from "../components/Ohma/BarGraph";
 import GoodToKnow from "../components/Ohma/GoodToKnow";
 import SuggestionBox from "../components/Ohma/SuggestionBox";
 import Transaction from "../components/Ohma/Transaction";
@@ -11,7 +9,6 @@ import Pagination from "../components/Ohma/Pagination";
 import BalanceLeft from "../components/BalanceLeft";
 import { AnalyticService } from "../components/AnalyticService";
 import "../tailwind.css";
-import PieChart from "../components/Piechart";
 import BarChart from "../components/BarChart";
 import ProgressChart from "../components/ProgressChart";
 import {
@@ -122,16 +119,6 @@ function IncomeWalletDetails() {
           {/*group left right area*/}
           <div className="gap-4 flex flex-col flex-1">
             {/*group left*/}
-            {/* Overview */}
-            {/* <Overview
-          monthlyGoal={monthlyGoal}
-          currentSaved={currentSaved}
-          remainingToGoal={remainingToGoal}
-          daysLeft={daysLeft}
-          dailyGoal={dailyGoal}
-          currentBalance={currentBalance}
-        /> */}
-
             <div className="gap-[10px] flex flex-col ">
               <div className="w-full flex justify-center flex-1 ">
                 <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
@@ -159,7 +146,7 @@ function IncomeWalletDetails() {
                 <div className="w-full md:w-1/2 h-[291px] flex-1">
                   <div className="flex flex-col flex-1 items-center justify-center w-full h-[291px] box-content rounded-[9px] bg-gray-100 border border-black/10">
                   <div className="w-full h-full p-4 flex items-center justify-center">
-                    <ProgressChart progressData={progressData} />
+                    <ProgressChart progressData={progressData} variant="income"/>
                   </div>
                   </div>
                 </div>
@@ -170,7 +157,7 @@ function IncomeWalletDetails() {
                     remaingoal={remainingToGoal}
                     variant="Income"
                   />
-                  <SuggestionBox walletId={id} />
+                  <SuggestionBox totalsave={currentSaved} remaingoal={remainingToGoal} dailygoal={dailyGoal} variant="income"/>
                 </div>
               </div>
 
