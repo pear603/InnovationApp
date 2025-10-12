@@ -10,6 +10,9 @@ import GoodToKnow from "../components/Ohma/GoodToKnow";
 import SuggestionBox from "../components/Ohma/SuggestionBox";
 import "../tailwind.css";
 import BalanceLeftIncome from "../components/BalanceLeftIncome";
+import { AnalyticService } from "../components/AnalyticService";
+import ProgressChart from "../components/ProgressChart";
+import BarChart from "../components/BarChart";
 import BalanceLeft from "../components/BalanceLeft";
 
 function ExpenseWalletDetails() {
@@ -23,6 +26,8 @@ function ExpenseWalletDetails() {
   const [daysLeft, setDaysLeft] = useState(0);
   const [dailyLimit, setDailyLimit] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [progressData, setProgressData] = useState(null); 
+  const [barData, setBarData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -49,8 +54,15 @@ function ExpenseWalletDetails() {
         const to = from + TRANSACTIONS_PER_PAGE - 1;
 
         const { data: pageTx, count } = await TransactionService.getTransactions(id, from, to);
-
         setTransactions(pageTx || []);
+
+        const progress = AnalyticService.processExpenseProgress(walletInfo, pageTx);
+        setProgressData(progress);
+
+        const barChartData = AnalyticService.processBarData(pageTx);
+        setBarData(barChartData);
+
+
         if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
       } catch (err) {
@@ -62,7 +74,7 @@ function ExpenseWalletDetails() {
     };
 
     fetchData();
-  }, [id, currentPage]);
+  }, [id, currentPage, monthlyBudget]);
 
   return (
     <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
@@ -108,7 +120,10 @@ function ExpenseWalletDetails() {
 
               <div className="flex flex-col sm:flex-row md:flex-row gap-5">
                 <div className="w-full md:w-1/2 h-[291px]">
-                  <PieStats />
+                  <div className="flex flex-col items-center justify-center w-full h-[291px] box-content  rounded-[9px] bg-gray-100 border border-black/10">
+                    {/* <PieChart data={pieData} /> */}
+                    <ProgressChart progressData={progressData} />
+                  </div>
                 </div>
 
                 <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
@@ -118,7 +133,7 @@ function ExpenseWalletDetails() {
               </div>
 
               <div className="w-full h-[230px] justify-items-center">
-                <BarGraph walletId={id} />
+                <BarChart data={barData} />
               </div>
             </div>
           </div>

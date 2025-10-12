@@ -386,4 +386,55 @@ export const AnalyticService = {
       return 0;
     }
   },
+
+  processIncomeProgress(walletInfo, transactions) {
+    if (!walletInfo) return console.log("No walletInfo");
+
+    const { monthlyGoal = 0, currentSaved = 0 } = walletInfo;
+    const totalIncome = transactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const progress = monthlyGoal
+      ? Math.min(((currentSaved + totalIncome) / monthlyGoal) * 100, 100)
+      : 0;
+
+    const chartData = {
+      labels: ["Achieved", "Remaining"],
+      datasets: [
+        {
+          data: [progress, 100 - progress],
+          backgroundColor: ["#4CAF50", "#E0E0E0"], // green + gray
+          borderWidth: 0,
+        },
+      ],
+    };
+
+    return { progress, chartData };
+  },
+// AnalyticService.js
+  processExpenseProgress(walletInfo, transactions) {
+    if (!walletInfo) return null;
+
+    const spent = walletInfo.currentSpent || 0;
+    const budget = walletInfo.originalBudget || 0;
+    const progressPercent = budget > 0 ? (spent / budget) * 100 : 0;
+
+    const chartData = {
+      labels: ["Spent", "Remaining"],
+      datasets: [
+        {
+          data: [spent, Math.max(budget - spent, 0)],
+          backgroundColor: ["#E16451", "#E0E0E0"], // red for spent, green for remaining
+        },
+      ],
+    };
+
+    return {
+      progress: progressPercent,
+      chartData,
+    };
+  }
+
+
 };

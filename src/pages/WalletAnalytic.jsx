@@ -116,9 +116,20 @@ function WalletAnalytic() {
             {/*group left*/}
 
             {/* Stats */}
+            <div className="gap-[10px] flex flex-col ">
+              
+              <div className="w-full flex justify-center flex-1 ">
+                <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
+                  <BalanceLeft variant={"Analytic"} balance={balance} walletNum={count} archived={archived}/>
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
+              
               <div className=" text-[24px] font-normal">Statistics</div>
 
+              
               <div className="flex flex-col sm:flex-row md:flex-row gap-5">
                 <div className="w-full md:w-1/2 h-[291px]">
                   <div className="flex flex-col items-center justify-center w-full h-[291px] box-content  rounded-[9px] bg-gray-100 border border-black/10">
@@ -139,13 +150,13 @@ function WalletAnalytic() {
               </div>
             </div>
 
-            <div className="gap-[10px] flex flex-col ">
+            {/* <div className="gap-[10px] flex flex-col ">
               <div className="w-full flex justify-center flex-1 ">
                 <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
                   <BalanceLeft variant={"Analytic"} balance={balance} walletNum={count} archived={archived}/>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
           {/* Fixed Transaction Area */}
           <div className="flex-1 w-full bg-white border border-black/25 rounded-lg p-4">
