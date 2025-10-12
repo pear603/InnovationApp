@@ -13,8 +13,7 @@ import { AnalyticService } from "../components/AnalyticService";
 import "../tailwind.css";
 import PieChart from "../components/Piechart";
 import BarChart from "../components/BarChart";
-import { Pie } from "react-chartjs-2";
-import { Bar } from "react-chartjs-2";
+import ProgressChart from "../components/ProgressChart";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -41,8 +40,8 @@ function IncomeWalletDetails() {
   const [walletInfo, setWalletInfo] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pieData, setPieData] = useState(null);
   const [barData, setBarData] = useState(null);
+  const [progressData, setProgressData] =useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -68,7 +67,7 @@ function IncomeWalletDetails() {
   // Fetch paginated transactions
   useEffect(() => {
     const fetchTransactions = async () => {
-      if (!id) return;
+      if (!id || !walletInfo) return;
       setLoading(true);
       try {
         const from = (currentPage - 1) * TRANSACTIONS_PER_PAGE;
@@ -81,13 +80,12 @@ function IncomeWalletDetails() {
         setTransactions(data);
         setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
-        const chartData = AnalyticService.processPieData(data);
-
-          setPieData(chartData);
-
-          const barChartData = AnalyticService.processBarData(data);
-
-          setBarData(barChartData);
+        const barChartData = AnalyticService.processBarData(data);
+        setBarData(barChartData);
+        
+        const progress = AnalyticService.processIncomeProgress(walletInfo, data);
+        setProgressData(progress);
+  
       } catch (err) {
         console.error(err);
       } finally {
@@ -95,7 +93,7 @@ function IncomeWalletDetails() {
       }
     };
     fetchTransactions();
-  }, [id, currentPage]);
+  }, [id, currentPage, walletInfo]);
 
   if (loading || !walletInfo)
     return <p className="text-center mt-10">Loading...</p>;
@@ -157,14 +155,16 @@ function IncomeWalletDetails() {
             <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
               <div className=" text-[24px] font-normal">Statistics</div>
 
-              <div className="flex flex-col sm:flex-row md:flex-row gap-5">
-                <div className="w-full md:w-1/2 h-[291px]">
-                  <div className="flex flex-col items-center justify-center w-full h-[291px] box-content  rounded-[9px] bg-gray-100 border border-black/10">
-                    <PieChart data={pieData} />
+              <div className="flex flex-col sm:flex-row md:flex-row gap-5 flex-wrap">
+                <div className="w-full md:w-1/2 h-[291px] flex-1">
+                  <div className="flex flex-col flex-1 items-center justify-center w-full h-[291px] box-content rounded-[9px] bg-gray-100 border border-black/10">
+                  <div className="w-full h-full p-4 flex items-center justify-center">
+                    <ProgressChart progressData={progressData} />
+                  </div>
                   </div>
                 </div>
 
-                <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
+                <div className="w-full md:w-1/2 flex-1 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
                   <GoodToKnow
                     totalsave={currentSaved}
                     remaingoal={remainingToGoal}
@@ -174,7 +174,7 @@ function IncomeWalletDetails() {
                 </div>
               </div>
 
-              <div className="w-full h-[230px] justify-items-center">
+              <div className="w-full h-[230px] justify-items-center box-content  rounded-[9px] bg-gray-100 border border-black/10">
                 <BarChart data={barData} />
               </div>
             </div>
@@ -210,79 +210,6 @@ function IncomeWalletDetails() {
   );
 }
 
-function Overview({
-  monthlyGoal,
-  currentSaved,
-  remainingToGoal,
-  daysLeft,
-  dailyGoal,
-  currentBalance,
-}) {
-  return (
-    <div className="w-[739px] bg-white rounded-[10px] p-6 shadow-lg">
-      <div className="text-[28px] font-bold mb-4">Savings Overview</div>
-      <div className="grid grid-cols-2 gap-6 mb-6">
-        <div>
-          <BudgetItem
-            label="Monthly Goal"
-            value={`$${monthlyGoal.toLocaleString()}`}
-          />
-          <BudgetItem
-            label="Currently Saved"
-            value={`$${currentSaved.toFixed(2)}`}
-            className="text-green-600"
-          />
-          <BudgetItem
-            label="Remaining to Goal"
-            value={`$${remainingToGoal.toFixed(2)}`}
-            className="text-blue-600"
-          />
-        </div>
-        <div>
-          <BudgetItem
-            label="Days Left"
-            value={`${daysLeft} days`}
-            className={daysLeft <= 3 ? "text-red-600" : "text-blue-600"}
-          />
-          <BudgetItem
-            label="Daily Goal"
-            value={`$${dailyGoal.toFixed(2)}`}
-            className="text-purple-600"
-          />
-          <BudgetItem
-            label="Progress"
-            value={`${
-              monthlyGoal > 0
-                ? ((currentSaved / monthlyGoal) * 100).toFixed(1)
-                : 0
-            }%`}
-          />
-        </div>
-      </div>
-      <div className="border-t pt-4">
-        <div className="flex justify-between items-center">
-          <span className="text-[22px] font-bold text-gray-800">
-            Current Balance:
-          </span>
-          <span className="text-[28px] font-bold text-green-600">
-            ${currentBalance.toFixed(2)}
-          </span>
-        </div>
-        <div className="text-sm text-gray-600 mt-1">
-          Days Left: {daysLeft} days
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function BudgetItem({ label, value, className = "" }) {
-  return (
-    <div className="flex justify-between">
-      <span className="text-gray-600">{label}:</span>
-      <span className={`font-semibold ${className}`}>{value}</span>
-    </div>
-  );
-}
 
 export default IncomeWalletDetails;

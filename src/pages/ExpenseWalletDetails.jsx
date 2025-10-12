@@ -10,6 +10,9 @@ import GoodToKnow from "../components/Ohma/GoodToKnow";
 import SuggestionBox from "../components/Ohma/SuggestionBox";
 import "../tailwind.css";
 import BalanceLeftIncome from "../components/BalanceLeftIncome";
+import { AnalyticService } from "../components/AnalyticService";
+import ProgressChart from "../components/ProgressChart";
+import BarChart from "../components/BarChart";
 import BalanceLeft from "../components/BalanceLeft";
 
 function ExpenseWalletDetails() {
@@ -23,6 +26,8 @@ function ExpenseWalletDetails() {
   const [daysLeft, setDaysLeft] = useState(0);
   const [dailyLimit, setDailyLimit] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [progressData, setProgressData] = useState(null); 
+  const [barData, setBarData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -49,8 +54,15 @@ function ExpenseWalletDetails() {
         const to = from + TRANSACTIONS_PER_PAGE - 1;
 
         const { data: pageTx, count } = await TransactionService.getTransactions(id, from, to);
-
         setTransactions(pageTx || []);
+
+        const progress = AnalyticService.processExpenseProgress(walletInfo, pageTx);
+        setProgressData(progress);
+
+        const barChartData = AnalyticService.processBarData(pageTx);
+        setBarData(barChartData);
+
+
         if (count) setTotalPages(Math.ceil(count / TRANSACTIONS_PER_PAGE));
 
       } catch (err) {
@@ -62,7 +74,7 @@ function ExpenseWalletDetails() {
     };
 
     fetchData();
-  }, [id, currentPage]);
+  }, [id, currentPage, monthlyBudget]);
 
   return (
     <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
@@ -75,16 +87,6 @@ function ExpenseWalletDetails() {
           {/*group left right area*/}
           <div className="gap-4 flex flex-col flex-1">
             {/*group left*/}
-
-            {/* Overview */}
-            {/* <Overview
-          monthlyBudget={monthlyBudget}
-          totalSpent={totalSpent}
-          remainingBudget={remainingBudget}
-          daysLeft={daysLeft}
-          dailyLimit={dailyLimit}
-          currentBalance={currentBalance}
-        /> */}
 
             <div className="gap-[10px] flex flex-col">
               <div className="w-full min-w-[739px] h-[197px] ">
@@ -106,19 +108,22 @@ function ExpenseWalletDetails() {
             <div className="flex flex-col bg-white w-full h-auto border border-black/25 rounded-[10px] gap-4 justify-items-center pl-10 pr-10 pt-6 pb-6">
               <div className=" text-[24px] font-normal">Statistics</div>
 
-              <div className="flex flex-col sm:flex-row md:flex-row gap-5">
-                <div className="w-full md:w-1/2 h-[291px]">
-                  <PieStats />
+              <div className="flex flex-col sm:flex-row md:flex-row gap-5 flex-wrap">
+                <div className="w-full md:w-1/2 h-[291px] flex-1">
+                  <div className="flex flex-col flex-1 items-center justify-center w-full h-[291px] box-content rounded-[9px] bg-gray-100 border border-black/10">
+                  <div className="w-full h-full p-4 flex items-center justify-center">
+                    <ProgressChart progressData={progressData} /></div>
+                  </div>
                 </div>
 
-                <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
+                <div className="w-full md:w-1/2 flex-1 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
                   <GoodToKnow totalspent={totalSpent} remainbudget={remainingBudget} variant="Expense" />
                   <SuggestionBox walletId={id} />
                 </div>
               </div>
 
-              <div className="w-full h-[230px] justify-items-center">
-                <BarGraph walletId={id} />
+              <div className="w-full h-[230px] justify-items-center box-content  rounded-[9px] bg-gray-100 border border-black/10">
+                <BarChart data={barData} />
               </div>
             </div>
           </div>
