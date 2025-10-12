@@ -126,20 +126,20 @@ function BothWalletDetails() {
                 <div className="flex flex-col flex-1 w-full md:w-1/2 gap-6 items-center justify-center bg-gray-100 p-4 rounded-[9px] border border-black/10">
                   {/* Income Progress */}
                   <div className="flex flex-col items-center justify-center">
-                    {incomeProgress && <ProgressChart progressData={incomeProgress} />}
-                    <span className="text-green-600 font-medium mt-2">Income Progress</span>
+                    {incomeProgress && <ProgressChart progressData={incomeProgress} variant="income"/>}
+                    <span className="text-[#9AD24B]  mt-2">Income Progress</span>
                   </div>
 
                   {/* Expense Progress */}
                   <div className="flex flex-col items-center justify-center">
-                    {expenseProgress && <ProgressChart progressData={expenseProgress} />}
-                    <span className="text-red-600 font-medium mt-2">Expense Progress</span>
+                    {expenseProgress && <ProgressChart progressData={expenseProgress} variant="expense"/>}
+                    <span className="text-[#E16451]  mt-2">Expense Progress</span>
                   </div>
                 </div>
 
-                <div className="w-full md:w-1/2 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
+                <div className="w-full md:w-1/2 flex-1 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
                   <GoodToKnow totalspent ={currentSpent} remainbudget={remainingBudget} totalsave= {currentSaved} remaingoal={remainingToGoal} variant="Both"/>
-                  <SuggestionBox walletId={id} />
+                  <SuggestionBox totalspent ={currentSpent} remainbudget={remainingBudget} totalsave= {currentSaved} remaingoal={remainingToGoal} dailygoal={dailyGoal} dailybudget = {dailyBudget} variant="both"/>
                 </div>
               </div>
 
