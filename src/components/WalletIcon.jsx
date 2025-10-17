@@ -14,7 +14,7 @@ function WalletIcon({ image, onChange }) {
       {image && <img src={image} alt="Wallet Icon" className="object-cover w-full h-full" />}
       <input
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png"
         onChange={handleImageChange}
         className="hidden"
       />
