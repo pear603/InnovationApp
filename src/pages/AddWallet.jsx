@@ -134,7 +134,7 @@ function AddWallet() {
             <div className="w-full h-[40px] bg-white rounded-lg border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.2)] relative">
               <div
                 className="w-[25px] h-[25px] bg-white border border-[rgba(0,0,0,0.25)] shadow-[0_4px_6px_rgba(0,0,0,0.1)] rounded flex items-center justify-center absolute right-2 top-1/2 -translate-y-1/2 hover:bg-gray-200"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/walletlist")}
               >
                 ✖
               </div>
