@@ -5,6 +5,7 @@ import CreateButton from "../components/CreateButton";
 import { TagService } from "../components/TagService";
 import {useState, useEffect} from "react";
 import { supabase } from "../assets/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 function AddTag() {
   const [tagName, setTagName] = useState("");
@@ -12,6 +13,7 @@ function AddTag() {
   const [globalTags, setGlobalTags] = useState([]);
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserAndTags = async () => {
@@ -60,11 +62,14 @@ function AddTag() {
     }
   };
 
+  const handleClose = () => {
+    navigate("/walletlist");
+  };
       
   return (
     <>
-      <Panel Height="h-[240px]">
-        <div className=" pl-[43px] pr-[29px] pt-[12px] gap-[16px]">
+      <Panel Height="h-[240px]" onClose={handleClose}>
+        <div className="pl-[43px] pr-[29px] pt-[12px] gap-[16px]">
           {error && <p className="text-red-500 mt-2">{error}</p>}
           <NameTag value={tagName} onChange={setTagName}>
             <CreateButton onClick={handleCreateTag} />
