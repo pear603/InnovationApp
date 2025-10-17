@@ -99,7 +99,7 @@ function AddIncomeTrans() {
     const getButtonText = () => {
         if (loading) return 'Processing...';
         const displayAmount = amount && !isNaN(parseFloat(amount)) ? parseFloat(amount).toLocaleString() : '0';
-        return `Add Income - $${displayAmount}`;
+        return `Add Income - ฿${displayAmount}`;
     };
     return (
         <div className="w-screen h-screen flex flex-row items-start justify-center bg-[#E2EFF3]">
@@ -118,15 +118,31 @@ function AddIncomeTrans() {
                     <div className="text-[27px] font-[400]">
                         {walletName || 'Loading Wallet...'}
                     </div>
+
                     <div className="text-[14px] text-gray-600 mt-1">
-                        Monthly Goal: ${monthlyGoal.toLocaleString()}
+                        Monthly Goal: ฿{monthlyGoal.toLocaleString()}
                     </div>
-                    <div className="text-[14px] text-green-600 mt-1">
-                        Currently Saved: ${currentSaved} | Remaining: ${(monthlyGoal - currentSaved)}
-                    </div>
-                    <div className="text-[12px] text-blue-600 mt-1">
-                        Daily Goal: ${dailyGoal} | Days Left: {daysLeft}
-                    </div>
+
+                    {currentSaved >= monthlyGoal ? (
+                        <>
+                            <div className="text-[14px] text-green-600 font-semibold mt-1">
+                                Goal Reached! You’ve saved ฿{currentSaved.toLocaleString()} 
+                            </div>
+                            <div className="text-[12px] text-gray-500 mt-1">
+                                You’ve completed your saving goal for this month.
+                            </div>
+                        </>
+                    ) : (
+
+                        <>
+                            <div className="text-[14px] text-green-600 mt-1">
+                                Currently Saved: ฿{currentSaved.toLocaleString()} | Remaining: ฿{(monthlyGoal - currentSaved).toLocaleString()}
+                            </div>
+                            <div className="text-[12px] text-blue-600 mt-1">
+                                Daily Goal: ฿{dailyGoal.toLocaleString()} | Days Left: {daysLeft}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="flex flex-col ml-8 mt-3 text-[15px]">

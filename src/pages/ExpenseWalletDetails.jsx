@@ -91,7 +91,7 @@ function ExpenseWalletDetails() {
                   balance={currentBalance}
                   day={daysLeft}
                   daily={dailyLimit}
-                  variant={"Expenxe"}
+                  variant={"Expense"}
                   budget = {monthlyBudget}
                 />
               </div>
