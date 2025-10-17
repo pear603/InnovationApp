@@ -14,6 +14,7 @@ function AddExpenseTrans() {
     const [walletName, setWalletName] = useState('');
     const [originalBudget, setOriginalBudget] = useState(0);
     const [currentSpent, setCurrentSpent] = useState(0);
+    const [currentSaved, setCurrentSaved] = useState(0);
     const [remainingBudget, setRemainingBudget] = useState(0);
     const [daysLeft, setDaysLeft] = useState(0);
     const [dailyBudget, setDailyBudget] = useState(0);
@@ -31,6 +32,7 @@ function AddExpenseTrans() {
                     setWalletType(walletData.walletType);
                     setOriginalBudget(walletData.originalBudget || 0);
                     setCurrentSpent(walletData.currentSpent || 0);
+                    setCurrentSaved(walletData.currentSaved|| 0);
                     setRemainingBudget(walletData.remainingBudget || 0);
                     setDaysLeft(walletData.daysLeft || 0);
                     setDailyBudget(walletData.dailyBudget || 0);
@@ -87,6 +89,7 @@ function AddExpenseTrans() {
                 const newDailyBudget = TransactionService.calcDailyBudget(newRemainingBudget, daysLeft);
 
                 setCurrentSpent(newCurrentSpent);
+               // setCurrentSaved(newCurrentSaved);
                 setRemainingBudget(newRemainingBudget);
                 setDailyBudget(newDailyBudget);
 
@@ -105,7 +108,7 @@ function AddExpenseTrans() {
     const getButtonText = () => {
         if (loading) return 'Processing...';
         const displayAmount = amount && !isNaN(parseFloat(amount)) ? parseFloat(amount).toLocaleString() : '0';
-        return `Add Expense - $${displayAmount}`;
+        return `Add Expense - ฿${displayAmount}`;
     };
     return (
         <div className="w-screen h-screen flex flex-row items-start justify-center bg-[#E2EFF3]">
@@ -120,20 +123,72 @@ function AddExpenseTrans() {
                 </div>
 
                 {/* Wallet Info Section */}
-                <div className="ml-8 mt-3">
-                    <div className="text-[27px] font-[400]">
-                        {walletName || 'Loading Wallet...'}
-                    </div>
-                    <div className="text-[14px] text-gray-600 mt-1">
-                        Original Budget: ${originalBudget.toLocaleString()}
-                    </div>
-                    <div className="text-[14px] text-green-600 mt-1">
-                        Remaining: ${remainingBudget} | Spent: ${currentSpent}
-                    </div>
-                    <div className="text-[12px] text-blue-600 mt-1">
-                        Daily: ${dailyBudget} | Days Left: {daysLeft}
-                    </div>
-                </div>
+<div className="ml-8 mt-3">
+  <div className="text-[27px] font-[400]">
+    {walletName || 'Loading Wallet...'}
+  </div>
+
+  {walletType === 'Both' ? (
+    (() => {
+      const currentBalance = originalBudget - currentSpent + currentSaved; // เงินปัจจุบัน
+      return (
+        <>
+          <div className="text-[14px] text-gray-600 mt-1">
+            Balance: ฿{currentBalance.toLocaleString()}
+          </div>
+
+          {currentBalance <= 0 ? (
+            <>
+              <div className="text-[14px] text-red-600 font-semibold mt-1">
+                Budget Used Up! You’ve spent all ฿{currentSpent.toLocaleString()}
+              </div>
+              <div className="text-[12px] text-gray-500 mt-1">
+                Try adjusting your combined budget and goal next month.
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-[14px] text-green-600 mt-1">
+                Remaining: ฿{currentBalance.toLocaleString()} | Spent: ฿{currentSpent.toLocaleString()}
+              </div>
+              <div className="text-[12px] text-blue-600 mt-1">
+                Daily allowed: ฿{((currentBalance / daysLeft) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} | Days Left: {daysLeft}
+              </div>
+            </>
+          )}
+        </>
+      );
+    })()
+  ) : (
+    <>
+      <div className="text-[14px] text-gray-600 mt-1">
+        Original Budget: ฿{originalBudget.toLocaleString()}
+      </div>
+
+      {remainingBudget <= 0 ? (
+        <>
+          <div className="text-[14px] text-red-600 font-semibold mt-1">
+            Budget Used Up! You’ve spent all ฿{currentSpent.toLocaleString()}
+          </div>
+          <div className="text-[12px] text-gray-500 mt-1">
+            Try saving next time or adjust your budget plan.
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="text-[14px] text-green-600 mt-1">
+            Remaining: ฿{remainingBudget.toLocaleString()} | Spent: ฿{currentSpent.toLocaleString()}
+          </div>
+          <div className="text-[12px] text-blue-600 mt-1">
+            Daily: ฿{dailyBudget.toLocaleString()} | Days Left: {daysLeft}
+          </div>
+        </>
+      )}
+    </>
+  )}
+</div>
+
+
 
                 <div className="flex flex-col ml-8 mt-3 text-[15px]">
                     <div className="grid grid-cols-6 gap-1">

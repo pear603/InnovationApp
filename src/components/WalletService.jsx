@@ -37,26 +37,40 @@ function WalletService({ values, onChange, onCreate }) {
 
   // Validate finance fields
   const validateFinance = () => {
+    const isInteger = (num) => Number.isInteger(Number(num));
+
     switch (activeType) {
       case "Expense":
         if (Number(values.Expense.budget) <= 0) {
-          alert("NegativeBudgetError");
+          alert("InvalidBudgetError");
+          return false;
+        }
+        if (!isInteger(values.Expense.budget)) {
+          alert("BudgetMustBeInteger");
           return false;
         }
         break;
       case "Income":
         if (Number(values.Income.goal) <= 0) {
-          alert("NegativeGoalError");
+          alert("InvalidGoalError");
+          return false;
+        }
+        if (!isInteger(values.Income.goal)) {
+          alert("GoalMustBeInteger");
           return false;
         }
         break;
       case "Both":
         if (Number(values.Both.budget) <= 0) {
-          alert("NegativeBudgetOrGoalError");
+          alert("InvalidBudgetorGoalError");
           return false;
         }
         if (Number(values.Both.goal) < 0) {
-          alert("NegativeBudgetOrGoalError");
+          alert("InvalidBudgetorGoalError");
+          return false;
+        }
+        if (!isInteger(values.Both.budget) || !isInteger(values.Both.goal)) {
+          alert("BudgetAndGoalMustBeInteger");
           return false;
         }
         break;
@@ -99,6 +113,7 @@ function WalletService({ values, onChange, onCreate }) {
               <p className="text-[16px] mb-1">Budget</p>
               <input
                 type="number"
+                step="1"
                 placeholder="Set Budget Amount"
                 className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                 value={values.Expense.budget}
@@ -120,6 +135,7 @@ function WalletService({ values, onChange, onCreate }) {
               <p className="text-[16px] mb-1">Goal</p>
               <input
                 type="number"
+                step="1"
                 placeholder="Set Goal Amount"
                 className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                 value={values.Income.goal}
@@ -142,6 +158,7 @@ function WalletService({ values, onChange, onCreate }) {
                 <p className="text-[16px] mb-1">Budget</p>
                 <input
                   type="number"
+                  step="1"
                   placeholder="Set Budget Amount"
                   className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                   value={values.Both.budget}
@@ -157,6 +174,7 @@ function WalletService({ values, onChange, onCreate }) {
                 <p className="text-[16px] mb-1">Goal</p>
                 <input
                   type="number"
+                  step="1"
                   placeholder="Set Goal Amount"
                   className="w-full h-10 px-2 rounded bg-[#E7EBEE] outline-none text-[16px] text-[#707376]"
                   value={values.Both.goal}

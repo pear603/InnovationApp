@@ -81,6 +81,8 @@ function BothWalletDetails() {
   const remainingToGoal = monthlyGoal - currentSaved;
   const currentBalance = monthlyBudget - currentSpent + currentSaved;
 
+  
+
   return (
     <div className="w-full min-h-screen flex flex-row items-start justify-center bg-[#E2EFF3] pt-8">
       <div className="flex flex-col bg-transparent gap-4 mx-20 max-w-[1280px] w-full">
@@ -95,17 +97,19 @@ function BothWalletDetails() {
 
             <div className="w-full gap-[10px] flex flex-col ">
               <div className="w-full flex justify-center flex-1 ">
-              <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
-                <BalanceLeft
-                  balance={currentBalance}
-                  day={daysLeft}
-                  dailygoal={dailyGoal}
-                  dailybudget = {dailyBudget}
-                  variant="Both"
-                  goal={monthlyGoal}
-                  budget={monthlyBudget}
-                />
-              </div>
+                <div className="w-full lg:w-[739px] flex-1 h-min-[197px]">
+                  <BalanceLeft
+                    balanceBudget={remainingBudget}
+                    balanceGoal={currentSaved}
+                    balance={currentBalance}
+                    day={daysLeft}
+                    dailygoal={dailyGoal}
+                    dailybudget={dailyBudget}
+                    variant="Both"
+                    goal={monthlyGoal}
+                    budget={monthlyBudget}
+                  />
+                </div>
               </div>
 
               {/* Action Buttons */}
@@ -122,24 +126,31 @@ function BothWalletDetails() {
               <div className=" text-[24px] font-normal">Statistics</div>
 
               <div className="flex flex-col flex-wrap sm:flex-row md:flex-row gap-5">
-          
+
                 <div className="flex flex-col flex-1 w-full md:w-1/2 gap-6 items-center justify-center bg-gray-100 p-4 rounded-[9px] border border-black/10">
                   {/* Income Progress */}
                   <div className="flex flex-col items-center justify-center">
-                    {incomeProgress && <ProgressChart progressData={incomeProgress} variant="income"/>}
+                    {incomeProgress && <ProgressChart progressData={incomeProgress} variant="income" />}
                     <span className="text-[#9AD24B]  mt-2">Income Progress</span>
                   </div>
 
                   {/* Expense Progress */}
                   <div className="flex flex-col items-center justify-center">
-                    {expenseProgress && <ProgressChart progressData={expenseProgress} variant="expense"/>}
+                    {expenseProgress && <ProgressChart progressData={expenseProgress} variant="expense" />}
                     <span className="text-[#E16451]  mt-2">Expense Progress</span>
                   </div>
                 </div>
 
                 <div className="w-full md:w-1/2 flex-1 flex flex-col sm:flex-col md:flex-col lg:flex-col gap-4 ">
-                  <GoodToKnow totalspent ={currentSpent} remainbudget={remainingBudget} totalsave= {currentSaved} remaingoal={remainingToGoal} variant="Both"/>
-                  <SuggestionBox totalspent ={currentSpent} remainbudget={remainingBudget} totalsave= {currentSaved} remaingoal={remainingToGoal} dailygoal={dailyGoal} dailybudget = {dailyBudget} variant="both"/>
+                  <GoodToKnow
+                    variant="Both"
+                    totalspent={currentSpent}
+                    remainbudget={remainingBudget}
+                    totalsave={currentSaved}
+                    remaingoal={remainingToGoal}
+                    balance={currentBalance}
+                  />
+                  <SuggestionBox totalspent={currentSpent} remainbudget={remainingBudget} totalsave={currentSaved} remaingoal={remainingToGoal} dailygoal={dailyGoal} dailybudget={dailyBudget} variant="both" />
                 </div>
               </div>
 

@@ -1,7 +1,7 @@
 import { supabase } from '../assets/supabaseClient';
 
 export const TransactionService = {
- 
+
     // Calculate remaining days
     calculateDaysLeft: (startDateString) => {
         if (!startDateString) return 30;
@@ -76,14 +76,19 @@ export const TransactionService = {
                 originalBudget = Number(bothWallet?.Budget || 0);
             }
 
-            walletData.originalBudget = originalBudget;
-            walletData.currentSpent = transactions
+            const currentSpent = transactions
                 .filter(tx => tx.TxType?.TxType === 'Expense')
                 .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
-            walletData.remainingBudget = walletData.originalBudget - walletData.currentSpent;
+
+            const remainingBudget = originalBudget - currentSpent;
+
+            walletData.originalBudget = originalBudget;
+            walletData.currentSpent = currentSpent;
+            walletData.remainingBudget = remainingBudget;
+
             walletData.dailyBudget = daysLeftNum > 0
-                ? Math.floor(walletData.remainingBudget / daysLeftNum)
-                : Math.floor(walletData.remainingBudget);
+                ? remainingBudget / daysLeftNum
+                : remainingBudget;
         }
 
         // Income or Both
@@ -114,7 +119,7 @@ export const TransactionService = {
                 .reduce((sum, tx) => sum + (parseFloat(tx.TxAmount) || 0), 0);
             walletData.remainingToGoal = walletData.monthlyGoal - walletData.currentSaved;
             walletData.dailyGoal = daysLeftNum > 0
-                ? Math.floor(walletData.remainingToGoal / daysLeftNum)
+                ? Math.ceil(walletData.remainingToGoal / daysLeftNum)
                 : 0;
         }
 
@@ -200,6 +205,7 @@ export const TransactionService = {
 
         return transactionData;
     },
+
 
     // Utility calculations
     calcRemainingBudget: (currentRemaining, txAmount) => currentRemaining - txAmount,
