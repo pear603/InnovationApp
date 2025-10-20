@@ -413,6 +413,32 @@ export const AnalyticService = {
   //   return { progress, chartData };
   // },
 
+//   processIncomeProgress(walletInfo, transactions) {
+//   if (!walletInfo) return console.log("No walletInfo");
+
+//   const { monthlyGoal = 0, currentSaved = 0 } = walletInfo;
+//   const totalIncome = transactions
+//     .filter((t) => t.type === "income")
+//     .reduce((sum, t) => sum + t.amount, 0);
+
+//   const achievedAmount = currentSaved + totalIncome;
+//   const remainingAmount = Math.max(monthlyGoal - achievedAmount, 0);
+//   const progressPercent = monthlyGoal ? Math.min((achievedAmount / monthlyGoal) * 100, 100) : 0;
+
+//   const chartData = {
+//     labels: ["Achieved", "Remaining"],
+//     datasets: [
+//       {
+//         data: [achievedAmount, remainingAmount], // ✅ actual amounts here
+//         backgroundColor: ["#9AD24B", "#E0E0E0"],
+//         borderWidth: 0,
+//       },
+//     ],
+//   };
+
+//   return { progress: progressPercent, chartData };
+// },
+
   processIncomeProgress(walletInfo, transactions) {
   if (!walletInfo) return console.log("No walletInfo");
 
@@ -423,46 +449,65 @@ export const AnalyticService = {
 
   const achievedAmount = currentSaved + totalIncome;
   const remainingAmount = Math.max(monthlyGoal - achievedAmount, 0);
-  const progressPercent = monthlyGoal ? Math.min((achievedAmount / monthlyGoal) * 100, 100) : 0;
+
+  // 🟩 Allow progress to exceed 100%
+  const progressPercent = monthlyGoal ? (achievedAmount / monthlyGoal) * 100 : 0;
+
+  // 🟨 Optional: track how much it's over the goal
+  const exceedPercent = progressPercent > 100 ? progressPercent - 100 : 0;
 
   const chartData = {
     labels: ["Achieved", "Remaining"],
     datasets: [
       {
-        data: [achievedAmount, remainingAmount], // ✅ actual amounts here
+        data:
+          [achievedAmount, remainingAmount],
         backgroundColor: ["#9AD24B", "#E0E0E0"],
         borderWidth: 0,
       },
     ],
   };
 
-  return { progress: progressPercent, chartData };
+  // 🧾 Return both progress and exceed info
+  return {
+    progress: progressPercent, // can go beyond 100
+    exceedPercent, // how much over the goal
+    chartData,
+  };
 },
 
-
   processExpenseProgress(walletInfo, transactions) {
-    if (!walletInfo) return null;
+  if (!walletInfo) return null;
 
-    const spent = walletInfo.currentSpent || 0;
-    const budget = walletInfo.originalBudget || 0;
-    const progressPercent = budget > 0 ? (spent / budget) * 100 : 0;
+  const spent = walletInfo.currentSpent || 0;
+  const budget = walletInfo.originalBudget || 0;
 
-    const chartData = {
-      labels: ["Spent", "Remaining"],
-      datasets: [
-        {
-          data: [spent, Math.max(budget - spent, 0)],
-          backgroundColor: ["#E16451", "#E0E0E0"], // red for spent, green for remaining
-          borderWidth: 0,
-        },
-      ],
-    };
+  // 🧮 Calculate progress — can go above 100%
+  const progressPercent = budget > 0 ? (spent / budget) * 100 : 0;
 
-    return {
-      progress: progressPercent,
-      chartData,
-    };
-  },
+  // 🔻 If over budget, show exceed as negative percent (e.g., -20%)
+  const exceedPercent = progressPercent > 100 ? 100 - progressPercent : 0;
+
+  const remaining = Math.max(budget - spent, 0);
+  const exceeded = Math.max(spent - budget, 0);
+
+  const chartData = {
+    labels: ["Spent", "Remaining"],
+    datasets: [
+      {
+        data:[spent, remaining],
+        backgroundColor: ["#E16451", "#E0E0E0"],
+        borderWidth: 0,
+      },
+    ],
+  };
+
+  return {
+    progress: progressPercent,
+    exceedPercent, // will be 0 normally, or negative when overspent
+    chartData,
+  };
+},
 
   processWalletSummary: (transactions) => {
   const totalSpent = transactions
