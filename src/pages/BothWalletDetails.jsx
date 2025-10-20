@@ -131,13 +131,13 @@ function BothWalletDetails() {
                   {/* Income Progress */}
                   <div className="flex flex-col items-center justify-center">
                     {incomeProgress && <ProgressChart progressData={incomeProgress} variant="income" />}
-                    <span className="text-[#9AD24B]  mt-2">Income Progress</span>
+                    <span className="text-green-600  mt-2">Income Progress</span>
                   </div>
 
                   {/* Expense Progress */}
                   <div className="flex flex-col items-center justify-center">
                     {expenseProgress && <ProgressChart progressData={expenseProgress} variant="expense" />}
-                    <span className="text-[#E16451]  mt-2">Expense Progress</span>
+                    <span className=" text-red-600  mt-2">Expense Progress</span>
                   </div>
                 </div>
 
