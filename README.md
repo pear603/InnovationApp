@@ -8,6 +8,10 @@
 - npm install
 - npm run dev
 
+กรณี install ไปแล้วให้
+- npm install
+อีกรอบเพื่ออัปเดต lib chart.js
+
 สร้าง branch ของตัวเองแยกออกมานะ เดี๋ยว Merge ทีเดียว
 
 # React + Vite
