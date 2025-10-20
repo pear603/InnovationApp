@@ -12,7 +12,7 @@
 - npm install
 อีกรอบเพื่ออัปเดต lib chart.js
 
-* merge ทุกครั้งถ้าไม่ใช่ master branch!
+# merge ทุกครั้งถ้าไม่ใช่ master branch!
 
 สร้าง branch ของตัวเองแยกออกมานะ เดี๋ยว Merge ทีเดียว
 
