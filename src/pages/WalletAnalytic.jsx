@@ -10,7 +10,7 @@ import Transaction from "../components/Ohma/Transaction";
 import Pagination from "../components/Ohma/Pagination";
 import BalanceLeftIncome from "../components/BalanceLeftIncome";
 import BalanceLeft from "../components/BalanceLeft";
-import PieChart from "../components/Piechart";
+import PieChart from "../components/PieChart";
 import BarChart from "../components/BarChart";
 import { AnalyticService } from "../components/AnalyticService";
 import { Pie } from "react-chartjs-2";
