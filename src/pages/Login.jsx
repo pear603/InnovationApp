@@ -35,6 +35,34 @@ function Login() {
 
         try {
             if (isSignUp) {
+                // Check if username or email already exists
+                const { data: existingUsers, error: checkError } = await supabase
+                    .from('Financial Planner')
+                    .select('username, email')
+                    .or(`username.eq.${username},email.eq.${email}`);
+
+                if (checkError) {
+                    setMessage({ text: 'Error checking existing users', type: 'error' });
+                    setLoading(false);
+                    return;
+                }
+
+                if (existingUsers && existingUsers.length > 0) {
+                    const usernameExists = existingUsers.some(user => user.username === username);
+                    const emailExists = existingUsers.some(user => user.email === email);
+
+                    if (usernameExists && emailExists) {
+                        setMessage({ text: 'Username and email already exist', type: 'error' });
+                    } else if (usernameExists) {
+                        setMessage({ text: 'Username already exists', type: 'error' });
+                    } else if (emailExists) {
+                        setMessage({ text: 'Email already exists', type: 'error' });
+                    }
+                    setLoading(false);
+                    return;
+                }
+
+                // Proceed with signup if no duplicates found
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
